@@ -1,4 +1,5 @@
 // src/components/TransportReport.jsx
+import packageJson from "../package.json";
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -62,7 +63,7 @@ const TransportReport = () => {
     const fetchSchoolYearPeriods = async () => {
       try {
         const response = await axios.get(
-          "http://127.0.0.1:5000/schoolyearperiods"
+          packageJson.backend.url + "/schoolyearperiods"
         );
         setSchoolYearPeriods(response.data.data);
       } catch (err) {
@@ -87,7 +88,7 @@ const TransportReport = () => {
 
     try {
       const response = await axios.get(
-        "http://127.0.0.1:5000/transport/transport-report",
+        packageJson.backend.url + "/transport/transport-report",
         {
           params: { school_year: selectedSchoolYear },
         }

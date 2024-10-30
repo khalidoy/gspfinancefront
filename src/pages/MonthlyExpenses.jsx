@@ -1,4 +1,5 @@
 // src/MonthlyExpenses.js
+import packageJson from "../package.json";
 
 import React, { useState, useEffect } from "react";
 import {
@@ -29,7 +30,7 @@ const monthsList = [
   { id: 8, name: "August" },
 ];
 
-const API_BASE_URL = "http://127.0.0.1:5000/depences"; // Backend API URL
+const API_BASE_URL = packageJson.backend.url + "/depences"; // Backend API URL
 
 function MonthlyExpenses() {
   const [showModal, setShowModal] = useState(false);

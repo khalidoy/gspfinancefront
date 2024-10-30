@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
+import packageJson from "../package.json";
+
 import {
   Table,
   Spinner,
@@ -41,7 +43,7 @@ function DailyAccReport() {
     setError("");
     try {
       const response = await axios.get(
-        "http://127.0.0.1:5000/dailyacc/daily_accounting_report",
+        packageJson.backend.url + "/dailyacc/daily_accounting_report",
         {
           params: {
             start_date: startDate.toISOString(),

@@ -1,5 +1,8 @@
 {
   "name": "gspfinancefront",
+  "backend": {
+    "url": "https://gspfinanceback.onrender.com"
+  },
   "version": "0.1.0",
   "private": true,
   "homepage": "https://khalidoy.github.io/gspfinancefront",

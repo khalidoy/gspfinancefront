@@ -1,4 +1,5 @@
 // src/NormalPayments.js
+import packageJson from "../package.json";
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
@@ -38,7 +39,7 @@ function NormalPayments() {
     const fetchSchoolYearPeriods = async () => {
       try {
         const response = await axios.get(
-          "http://127.0.0.1:5000/schoolyearperiods/"
+          packageJson.backend.url + "/schoolyearperiods/"
         );
         setSchoolYearPeriods(response.data.data);
       } catch (err) {
@@ -55,7 +56,8 @@ function NormalPayments() {
     setError("");
     try {
       const response = await axios.get(
-        `http://127.0.0.1:5000/reports/normal_profit_report?schoolyear_id=${schoolyear_id}`
+        packageJson.backend.url +
+          `/reports/normal_profit_report?schoolyear_id=${schoolyear_id}`
       );
       setReportData(response.data.data);
       setTotalYearlyIncome(response.data.total_yearly_income);
@@ -66,7 +68,8 @@ function NormalPayments() {
 
       // Fetch unknown students
       const unknownResponse = await axios.get(
-        `http://127.0.0.1:5000/reports/unknown_agreed_payments?schoolyear_id=${schoolyear_id}`
+        packageJson.backend.url +
+          `/reports/unknown_agreed_payments?schoolyear_id=${schoolyear_id}`
       );
       if (unknownResponse.data.status === "success") {
         setUnknownStudents(unknownResponse.data.students);

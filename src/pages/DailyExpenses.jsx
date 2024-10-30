@@ -1,4 +1,5 @@
 // DailyExpenses.jsx
+import packageJson from "../package.json";
 
 import React, { useState, useEffect } from "react";
 import { Container, Table, Button, Modal, Form, Alert } from "react-bootstrap";
@@ -17,7 +18,7 @@ function DailyExpenses() {
   const [loadingExpenses, setLoadingExpenses] = useState(false);
   const [savingExpense, setSavingExpense] = useState(false);
 
-  const API_BASE_URL = "http://127.0.0.1:5000";
+  const API_BASE_URL = packageJson.backend.url;
 
   const today = new Date();
   const formattedDate = today.toLocaleDateString("en-GB", {

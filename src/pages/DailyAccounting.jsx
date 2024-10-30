@@ -1,5 +1,7 @@
 // src/pages/DailyAccounting.jsx
 import React, { useState, useEffect, useRef } from "react";
+import packageJson from "../package.json";
+
 import {
   Container,
   Table,
@@ -15,7 +17,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import "./DailyAccounting.css"; // Import your CSS file
 
-const API_BASE_URL = "http://127.0.0.1:5000/accounting"; // Adjust the URL according to your backend
+const API_BASE_URL = packageJson.backend.url + "/accounting"; // Adjust the URL according to your backend
 
 function DailyAccounting() {
   const [payments, setPayments] = useState([]);
