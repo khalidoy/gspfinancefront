@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.css": "/gspfinancefront/static/css/main.44c46b19.css",
+    "main.js": "/gspfinancefront/static/js/main.4fe1f703.js",
+    "static/js/213.18c9ae23.chunk.js": "/gspfinancefront/static/js/213.18c9ae23.chunk.js",
+    "static/js/732.8692a372.chunk.js": "/gspfinancefront/static/js/732.8692a372.chunk.js",
+    "static/js/453.26c52bb7.chunk.js": "/gspfinancefront/static/js/453.26c52bb7.chunk.js",
+    "index.html": "/gspfinancefront/index.html",
+    "main.44c46b19.css.map": "/gspfinancefront/static/css/main.44c46b19.css.map",
+    "main.4fe1f703.js.map": "/gspfinancefront/static/js/main.4fe1f703.js.map",
+    "213.18c9ae23.chunk.js.map": "/gspfinancefront/static/js/213.18c9ae23.chunk.js.map",
+    "732.8692a372.chunk.js.map": "/gspfinancefront/static/js/732.8692a372.chunk.js.map",
+    "453.26c52bb7.chunk.js.map": "/gspfinancefront/static/js/453.26c52bb7.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.44c46b19.css",
+    "static/js/main.4fe1f703.js"
+  ]
+}
