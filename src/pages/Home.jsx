@@ -1,5 +1,5 @@
 // src/Home.js
-import packageJson from "../package.json";
+
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import "./Home.css";
@@ -18,7 +18,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 // Configure axios with a base URL
 const api = axios.create({
-  baseURL: packageJson.backend.url,
+  baseURL: process.env.REACT_APP_BACKEND_URL,
 });
 
 const currentUserId = "670ac94fc3d3342280ec3d62";

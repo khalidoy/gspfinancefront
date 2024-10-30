@@ -1,5 +1,5 @@
 // src/components/PaymentsReport.jsx
-import packageJson from "../package.json";
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -62,7 +62,7 @@ const PaymentsReport = () => {
     const fetchSchoolYearPeriods = async () => {
       try {
         const response = await axios.get(
-          packageJson.backend.url + "/schoolyearperiods"
+          process.env.REACT_APP_BACKEND_URL + "/schoolyearperiods"
         );
         setSchoolYearPeriods(response.data.data);
       } catch (err) {
@@ -87,7 +87,7 @@ const PaymentsReport = () => {
 
     try {
       const response = await axios.get(
-        packageJson.backend.url + "/payments-report/payments-report",
+        process.env.REACT_APP_BACKEND_URL + "/payments-report/payments-report",
         {
           params: { school_year: selectedSchoolYear },
         }

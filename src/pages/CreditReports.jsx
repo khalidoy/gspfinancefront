@@ -1,5 +1,5 @@
 // src/components/CreditReports.jsx
-import packageJson from "../package.json";
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table, Spinner, Alert, Form, Button, Modal } from "react-bootstrap";
@@ -37,7 +37,7 @@ function CreditReports() {
     const fetchSchoolYearPeriods = async () => {
       try {
         const response = await axios.get(
-          packageJson.backend.url + "/schoolyearperiods"
+          process.env.REACT_APP_BACKEND_URL + "/schoolyearperiods"
         );
         setSchoolYearPeriods(response.data.data);
       } catch (err) {
@@ -54,7 +54,7 @@ function CreditReports() {
     setError("");
     try {
       const response = await axios.get(
-        packageJson.backend.url +
+        process.env.REACT_APP_BACKEND_URL +
           `/creditreports/all_months_report?schoolyear_id=${selectedSchoolYear}`
       );
       setReportData(response.data.data);
