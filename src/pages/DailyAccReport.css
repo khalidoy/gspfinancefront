@@ -1,0 +1,53 @@
+.daily-acc-container {
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.daily-acc-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.filter-container {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.date-picker-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.download-button {
+  background-color: #28a745;
+  color: white;
+  display: flex;
+  align-items: center;
+}
+
+.download-button svg {
+  margin-right: 8px;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.alert-container {
+  margin-top: 20px;
+}
+
+.daily-acc-table {
+  margin-top: 20px;
+}
+
+.totals-row {
+  background-color: #f1f1f1;
+  font-weight: bold;
+}

@@ -1,0 +1,27 @@
+.credit-reports-container {
+  margin: 20px;
+}
+
+.credit-reports-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.alert-container {
+  margin-top: 20px;
+}
+
+.credit-reports-table {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.download-button {
+  margin-top: 20px;
+}

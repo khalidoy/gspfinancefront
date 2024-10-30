@@ -1,0 +1,37 @@
+/* src/components/PrintableReport.css */
+
+.printable-report {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+.printable-report h1,
+.printable-report h2,
+.printable-report h3 {
+  text-align: center;
+}
+
+.printable-report table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.printable-report th,
+.printable-report td {
+  border: 1px solid #000;
+  padding: 8px;
+}
+
+.printable-report th {
+  background-color: #f2f2f2;
+}
+
+@media print {
+  .printable-report {
+    page-break-after: always;
+  }
+  .printable-report table {
+    width: 100%;
+  }
+}

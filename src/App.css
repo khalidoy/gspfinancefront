@@ -1,0 +1,58 @@
+.App {
+  text-align: center;
+}
+
+/* Apply a background gradient to the entire app */
+
+body,
+html {
+  height: 100%;
+  margin: 0;
+  font-family: "Arial", sans-serif;
+  background: linear-gradient(135deg, #343a40, #495057);
+  /* Dark gray to lighter gray */
+}
+
+/* App logo remains the same */
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+/* Updated header with a gradient background */
+
+.App-header {
+  background: linear-gradient(135deg, #212529, #343a40);
+  /* Darker gradient for the header */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+/* App link styling remains the same */
+
+.App-link {
+  color: #61dafb;
+}
+
+/* Keyframes for spinning logo */
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

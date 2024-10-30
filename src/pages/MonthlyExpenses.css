@@ -1,0 +1,100 @@
+.container {
+  margin-top: 40px;
+}
+
+h1 {
+  text-align: center;
+  color: #343a40;
+  margin-bottom: 30px;
+}
+
+.table {
+  margin-top: 20px;
+}
+
+.table th,
+.table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  color: #343a40;
+}
+
+.table td {
+  background-color: #ffffff;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f2f2f2;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #e9ecef;
+}
+
+.modal-title {
+  font-weight: bold;
+  color: #495057;
+}
+
+.modal-body h5 {
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.alert {
+  margin-top: 15px;
+}
+
+button {
+  font-size: 14px;
+  padding: 8px 12px;
+}
+
+button.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+button.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+button.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+button.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #c82333;
+}
+
+.modal-footer .btn {
+  padding: 10px 15px;
+  font-size: 16px;
+}
+
+.form-control {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  font-size: 14px;
+}
+
+.form-group label {
+  font-weight: bold;
+}
+
+.form-group input {
+  margin-top: 5px;
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}

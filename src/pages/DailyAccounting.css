@@ -1,0 +1,184 @@
+/* src/pages/DailyAccounting.css */
+
+/* Container styling */
+
+.container {
+  margin-top: 50px;
+}
+
+/* Center the heading */
+
+h1 {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+/* Table styles */
+
+.table {
+  margin-top: 20px;
+  width: 100%;
+}
+
+/* Add padding and margin to tables */
+
+.table-wrapper {
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+/* Align the total payments and expenses */
+
+.summary-section {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-top: 30px;
+}
+
+.summary-section h5 {
+  margin: 10px 0;
+}
+
+/* Row for total payments (green background) */
+
+.table tfoot tr.total-payments td {
+  background-color: #d4edda !important;
+  /* Light green */
+  font-weight: bold !important;
+}
+
+/* Row for total expenses (red background) */
+
+.table tfoot tr.total-expenses td {
+  background-color: #f8d7da !important;
+  /* Light red for expenses */
+  font-weight: bold !important;
+}
+
+/* Validate and Download Buttons Styling */
+
+.validate-print-buttons .btn {
+  width: 250px;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.validate-print-buttons .btn:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+/* Summary Section Styling */
+
+.summary-section {
+  background-color: #f8f9fa;
+  /* Light grey background for summary section */
+  padding: 20px;
+  border-radius: 5px;
+}
+
+/* Net Profit Styling */
+
+.net-profit {
+  font-size: 2rem;
+  color: black;
+  /* Text color */
+  background-color: yellow;
+  /* Yellow background */
+  width: 50%;
+  /* 50% width */
+  margin: 0 auto;
+  /* Center horizontally */
+  text-align: center;
+  /* Center text */
+  padding: 10px;
+  /* Padding around text */
+  border-radius: 5px;
+  /* Rounded corners */
+}
+
+/* Download Button Styling */
+
+.download {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.download svg {
+  margin-right: 5px;
+}
+
+/* Signature Section Styling - New Addition */
+
+.signature-section {
+  width: 100%;
+  margin-top: 50px;
+}
+
+.signature-line {
+  width: 80%;
+  height: 2px;
+  background-color: #000;
+  margin: 0 auto;
+  margin-bottom: 10px;
+}
+
+/* Responsive styling */
+
+@media (max-width: 768px) {
+  .table-wrapper {
+    padding: 5px;
+  }
+  .table {
+    font-size: 0.9rem;
+  }
+  .summary-section h5 {
+    font-size: 1rem;
+  }
+  .validate-print-buttons .btn {
+    width: 200px;
+    font-size: 1rem;
+    padding: 10px 20px;
+  }
+  /* Adjust Net Profit for smaller screens */
+  .net-profit {
+    width: 80%;
+  }
+  /* Adjust Signature Lines for smaller screens */
+  .signature-line {
+    width: 60%;
+  }
+}
+
+/* Printable Report Styling - Hidden from view */
+
+.printable-report {
+  position: absolute;
+  top: -10000px;
+  /* Moves the div off-screen */
+  left: -10000px;
+  width: 210mm;
+  /* A4 width */
+  /* Ensure no background color or borders */
+  background: none;
+}
+
+/* Hidden Download Report Styling */
+
+.hidden-download-report {
+  position: absolute;
+  top: -10000px;
+  left: -10000px;
+  width: 210mm;
+  /* A4 width */
+  background: none;
+}
