@@ -1,12 +1,13 @@
-// DailyExpenses.jsx
-
+// src/pages/DailyExpenses.jsx
 import React, { useState, useEffect } from "react";
 import { Container, Table, Button, Modal, Form, Alert } from "react-bootstrap";
 import { FaPlus, FaEdit, FaTrash, FaCalendarAlt } from "react-icons/fa";
 import axios from "axios";
 import "./DailyExpenses.css";
+import { useTranslation } from "react-i18next";
 
 function DailyExpenses() {
+  const { t } = useTranslation();
   const [expenses, setExpenses] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
@@ -49,7 +50,7 @@ function DailyExpenses() {
       setLoadingExpenses(false);
     } catch (err) {
       console.error("Error fetching expenses:", err);
-      setError("Failed to fetch expenses.");
+      setError(t("failed_to_fetch_expenses"));
       setLoadingExpenses(false);
     }
   };
@@ -73,34 +74,32 @@ function DailyExpenses() {
   };
 
   const handleDeleteExpense = async (expenseId) => {
-    if (!window.confirm("Are you sure you want to delete this expense?"))
-      return;
+    if (!window.confirm(t("confirm_delete_expense"))) return;
 
     try {
       await axios.delete(`${API_BASE_URL}/depences/${expenseId}`);
       setExpenses((prevExpenses) =>
         prevExpenses.filter((expense) => expense.id !== expenseId)
       );
-      setSuccess("Expense deleted successfully.");
+      setSuccess(t("expense_deleted_successfully"));
     } catch (err) {
       console.error("Error deleting expense:", err);
-      // Handle different error structures
       if (err.response && err.response.data && err.response.data.message) {
         setError(err.response.data.message);
       } else {
-        setError("Failed to delete expense.");
+        setError(t("failed_to_delete_expense"));
       }
     }
   };
 
   const handleSaveExpense = async () => {
     if (!expenseDescription.trim() || !expenseAmount) {
-      setError("Please fill in all fields.");
+      setError(t("please_fill_all_fields"));
       return;
     }
 
     if (isNaN(expenseAmount) || Number(expenseAmount) <= 0) {
-      setError("Please enter a valid amount.");
+      setError(t("please_enter_valid_amount"));
       return;
     }
 
@@ -142,7 +141,7 @@ function DailyExpenses() {
               : expense
           )
         );
-        setSuccess("Expense updated successfully.");
+        setSuccess(t("expense_updated_successfully"));
       } else {
         // Create new expense
         const createResponse = await axios.post(
@@ -161,21 +160,20 @@ function DailyExpenses() {
 
         const id = newExpense._id?.$oid || newExpense.id;
         if (!id) {
-          throw new Error("New expense is missing an ID.");
+          throw new Error(t("new_expense_missing_id"));
         }
 
         const expenseWithId = { ...newExpense, id };
         setExpenses((prevExpenses) => [...prevExpenses, expenseWithId]);
-        setSuccess("Expense added successfully.");
+        setSuccess(t("expense_added_successfully"));
       }
       setShowModal(false);
     } catch (err) {
       console.error("Error saving expense:", err);
-      // Handle different error structures
       if (err.response && err.response.data && err.response.data.message) {
         setError(err.response.data.message);
       } else {
-        setError("Failed to save expense.");
+        setError(t("failed_to_save_expense"));
       }
     } finally {
       setSavingExpense(false);
@@ -192,7 +190,7 @@ function DailyExpenses() {
     <Container className="mt-4">
       <h1 className="mb-4 text-center">
         <FaCalendarAlt className="mr-2" style={{ marginRight: 5 }} />
-        Daily Expenses - {formattedDate}
+        {t("daily_expenses")} - {formattedDate}
       </h1>
 
       {error && (
@@ -208,35 +206,36 @@ function DailyExpenses() {
       )}
 
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h4 className="mb-0">Expenses List</h4>
+        <h4 className="mb-0">{t("expenses_list")}</h4>
         <Button variant="primary" onClick={handleAddExpense}>
           <FaPlus className="mr-2" />
-          Add Expense
+          {t("add_expense")}
         </Button>
       </div>
 
       {/* **Total Amount Display in DH** */}
       <Alert variant="info" className="text-right">
-        Total Expenses Today : <strong>{totalAmount.toFixed(2)} DH</strong>
+        {t("total_expenses_today")} :{" "}
+        <strong>{totalAmount.toFixed(2)} DH</strong>
       </Alert>
 
       {loadingExpenses ? (
         <div className="d-flex align-items-center">
           <div className="spinner-border mr-2" role="status">
-            <span className="sr-only">Loading...</span>
+            <span className="sr-only">{t("loading")}</span>
           </div>
-          Loading expenses...
+          {t("loading_expenses")}
         </div>
       ) : expenses.length === 0 ? (
-        <p>No expenses recorded for today.</p>
+        <p>{t("no_expenses_recorded_today")}</p>
       ) : (
         <Table striped bordered hover responsive className="expenses-table">
           <thead>
             <tr>
               <th>#</th>
-              <th>Description</th>
-              <th>Amount in DH</th>
-              <th>Actions</th>
+              <th>{t("expense_description")}</th>
+              <th>{t("amount")} (DH)</th>
+              <th>{t("actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -244,7 +243,6 @@ function DailyExpenses() {
               <tr key={expense.id}>
                 <td>{index + 1}</td>
                 <td>{expense.description}</td>
-                {/* **Display Amount in DH** */}
                 <td>{expense.amount.toFixed(2)}</td>
                 <td className="text-center">
                   <Button
@@ -275,25 +273,25 @@ function DailyExpenses() {
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>
-            {editingExpense ? "Edit Expense" : "Add Expense"}
+            {editingExpense ? t("edit_expense") : t("add_expense")}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <Form.Group controlId="expenseDescription">
-              <Form.Label>Expense Description</Form.Label>
+              <Form.Label>{t("expense_description")}</Form.Label>
               <Form.Control
                 type="text"
-                placeholder="Enter expense description"
+                placeholder={t("enter_expense_description")}
                 value={expenseDescription}
                 onChange={(e) => setExpenseDescription(e.target.value)}
               />
             </Form.Group>
             <Form.Group controlId="expenseAmount">
-              <Form.Label>Amount</Form.Label>
+              <Form.Label>{t("amount")}</Form.Label>
               <Form.Control
                 type="number"
-                placeholder="Enter amount"
+                placeholder={t("enter_amount")}
                 value={expenseAmount}
                 onChange={(e) => setExpenseAmount(e.target.value)}
                 min="0"
@@ -309,7 +307,7 @@ function DailyExpenses() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Cancel
+            {t("cancel")}
           </Button>
           <Button
             variant="primary"
@@ -318,11 +316,11 @@ function DailyExpenses() {
           >
             {savingExpense
               ? editingExpense
-                ? "Updating..."
-                : "Adding..."
+                ? t("updating")
+                : t("adding")
               : editingExpense
-              ? "Update Expense"
-              : "Add Expense"}
+              ? t("update_expense")
+              : t("add_expense")}
           </Button>
         </Modal.Footer>
       </Modal>

@@ -1,5 +1,4 @@
-// src/MonthlyExpenses.js
-
+// src/MonthlyExpenses.jsx
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -13,6 +12,8 @@ import {
 } from "react-bootstrap";
 import { FaTrash, FaEdit } from "react-icons/fa";
 import axios from "axios"; // Import axios for API calls
+import "./MonthlyExpenses.css";
+import { useTranslation } from "react-i18next";
 
 const monthsList = [
   { id: 9, name: "September" },
@@ -32,6 +33,7 @@ const monthsList = [
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL + "/depences"; // Backend API URL
 
 function MonthlyExpenses() {
+  const { t } = useTranslation();
   const [showModal, setShowModal] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [fixedExpenses, setFixedExpenses] = useState({});
@@ -50,6 +52,7 @@ function MonthlyExpenses() {
     setExpenseAmount(expense.expense_amount);
     setEditingIndex(index); // Set the index of the expense being edited
   };
+
   // Fetch existing expenses when the component mounts
   useEffect(() => {
     const fetchData = async () => {
@@ -66,10 +69,11 @@ function MonthlyExpenses() {
         }
       } catch (error) {
         console.error("Error fetching data: ", error);
-        setError("Failed to fetch existing expenses.");
+        setError(t("failed_to_fetch_existing_expenses"));
       }
     };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Function to handle opening the modal for a selected month
@@ -96,7 +100,7 @@ function MonthlyExpenses() {
       isNaN(expenseAmount) ||
       Number(expenseAmount) <= 0
     ) {
-      setError("Please provide valid expense type and amount.");
+      setError(t("please_provide_valid_expense_type_amount"));
       return;
     }
 
@@ -127,7 +131,7 @@ function MonthlyExpenses() {
       isNaN(expenseAmount) ||
       Number(expenseAmount) <= 0
     ) {
-      setError("Please provide valid expense type and amount.");
+      setError(t("please_provide_valid_expense_type_amount"));
       return;
     }
 
@@ -165,13 +169,13 @@ function MonthlyExpenses() {
       );
 
       if (response.status === 200 || response.status === 201) {
-        setSuccess("Expenses saved successfully.");
+        setSuccess(t("expenses_saved_successfully"));
       } else {
-        setError("Failed to save expenses.");
+        setError(t("failed_to_save_expenses"));
       }
     } catch (err) {
       console.error("Error saving expenses:", err);
-      setError("Failed to save expenses.");
+      setError(t("failed_to_save_expenses"));
     }
   };
 
@@ -182,7 +186,9 @@ function MonthlyExpenses() {
         `${API_BASE_URL}/monthly/populate_defaults`
       );
       if (response.data.status === "success") {
-        setPopulateSuccess(response.data.message);
+        setPopulateSuccess(
+          response.data.message || t("expenses_saved_successfully")
+        );
         setPopulateError("");
         // Refetch the expenses after populating defaults
         const fetchData = async () => {
@@ -198,26 +204,24 @@ function MonthlyExpenses() {
             }
           } catch (error) {
             console.error("Error fetching data: ", error);
-            setError("Failed to fetch existing expenses.");
+            setError(t("failed_to_fetch_existing_expenses"));
           }
         };
         fetchData();
       } else {
-        setPopulateError("Failed to populate default expenses.");
+        setPopulateError(t("failed_to_populate_default_expenses"));
         setPopulateSuccess("");
       }
     } catch (error) {
       console.error("Error populating defaults:", error);
-      setPopulateError("Failed to populate default expenses.");
+      setPopulateError(t("failed_to_populate_default_expenses"));
       setPopulateSuccess("");
     }
   };
 
   return (
     <Container className="mt-4">
-      <h1 className="mb-4 text-center">
-        Monthly Expenses (September - August)
-      </h1>
+      <h1 className="mb-4 text-center">{t("monthly_expenses_title")}</h1>
 
       {/* Success and error messages */}
       {error && (
@@ -255,7 +259,7 @@ function MonthlyExpenses() {
         className="mb-4"
         onClick={handlePopulateDefaults}
       >
-        Populate Default Expenses
+        {t("populate_default_expenses")}
       </Button>
 
       {/* Table to display months and their total expenses */}
@@ -263,9 +267,9 @@ function MonthlyExpenses() {
         <thead>
           <tr>
             <th>#</th>
-            <th>Month</th>
-            <th>Total Expenses (DH)</th>
-            <th>Actions</th>
+            <th>{t("month")}</th>
+            <th>{t("total_expenses_dh")}</th>
+            <th>{t("actions")}</th>
           </tr>
         </thead>
         <tbody>
@@ -279,14 +283,14 @@ function MonthlyExpenses() {
             return (
               <tr key={month.id}>
                 <td>{index + 1}</td>
-                <td>{month.name}</td>
+                <td>{t(month.name.toLowerCase())}</td>
                 <td>{totalExpenses.toFixed(2)} DH</td>
                 <td className="d-flex justify-content-center align-items-center">
                   <Button
                     variant="primary"
                     onClick={() => handleOpenModal(month.id)}
                   >
-                    View Expenses
+                    {t("view_expenses")}
                   </Button>
                 </td>
               </tr>
@@ -299,20 +303,21 @@ function MonthlyExpenses() {
       <Modal show={showModal} onHide={handleCloseModal} centered size="xl">
         <Modal.Header closeButton>
           <Modal.Title>
-            Expenses for {monthsList.find((m) => m.id === selectedMonth)?.name}
+            {t("expenses_for_month", {
+              monthName: monthsList.find((m) => m.id === selectedMonth)?.name,
+            })}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {/* Existing Expenses */}
-          <h5>Existing Expenses:</h5>
+          <h5>{t("existing_expenses")}</h5>
           <Table striped bordered>
             <thead>
               <tr>
                 <th>#</th>
-                <th>Expense Type</th>
-                <th>Amount (DH)</th>
-                <th style={{ textAlign: "center" }}>Actions</th>{" "}
-                {/* Center Actions */}
+                <th>{t("expense_type")}</th>
+                <th>{t("amount_dh")}</th>
+                <th style={{ textAlign: "center" }}>{t("actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -342,7 +347,7 @@ function MonthlyExpenses() {
               {(fixedExpenses[selectedMonth] || []).length === 0 && (
                 <tr>
                   <td colSpan="4" className="text-center">
-                    No expenses added yet.
+                    {t("no_expenses_added_yet")}
                   </td>
                 </tr>
               )}
@@ -352,17 +357,21 @@ function MonthlyExpenses() {
           {/* Total Expenses */}
           <div className="mt-3">
             <h6>
-              Total for {monthsList.find((m) => m.id === selectedMonth)?.name}:{" "}
-              {(fixedExpenses[selectedMonth] || [])
-                .reduce((sum, expense) => sum + expense.expense_amount, 0)
-                .toFixed(2)}{" "}
+              {t("total_for_month", {
+                month: monthsList.find((m) => m.id === selectedMonth)?.name,
+                amount: (fixedExpenses[selectedMonth] || [])
+                  .reduce((sum, expense) => sum + expense.expense_amount, 0)
+                  .toFixed(2),
+              })}{" "}
               DH
             </h6>
           </div>
 
           {/* Form to add or edit a fixed expense */}
           <h5 className="mt-4">
-            {editingIndex !== null ? "Edit Fixed Expense" : "Add Fixed Expense"}
+            {editingIndex !== null
+              ? t("edit_fixed_expense")
+              : t("add_fixed_expense")}
             :
           </h5>
           {error && <Alert variant="danger">{error}</Alert>}
@@ -370,10 +379,10 @@ function MonthlyExpenses() {
             <Row>
               <Col>
                 <Form.Group controlId="expenseType">
-                  <Form.Label>Expense Type</Form.Label>
+                  <Form.Label>{t("expense_type")}</Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="Enter expense type (e.g., electricity)"
+                    placeholder={t("enter_expense_description")}
                     value={expenseType}
                     onChange={(e) => setExpenseType(e.target.value)}
                   />
@@ -381,12 +390,14 @@ function MonthlyExpenses() {
               </Col>
               <Col>
                 <Form.Group controlId="expenseAmount">
-                  <Form.Label>Amount (DH)</Form.Label>
+                  <Form.Label>{t("amount_dh")}</Form.Label>
                   <Form.Control
                     type="number"
-                    placeholder="Enter amount"
+                    placeholder={t("enter_amount")}
                     value={expenseAmount}
                     onChange={(e) => setExpenseAmount(e.target.value)}
+                    min="0"
+                    step="0.01"
                   />
                 </Form.Group>
               </Col>
@@ -401,17 +412,17 @@ function MonthlyExpenses() {
               }
             >
               {editingIndex !== null
-                ? "Update Fixed Expense"
-                : "Add Fixed Expense"}
+                ? t("update_fixed_expense")
+                : t("add_fixed_expense")}
             </Button>
           </Form>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
-            Close
+            {t("close")}
           </Button>
           <Button variant="success" onClick={handleSaveExpenses}>
-            Save
+            {t("save")}
           </Button>
         </Modal.Footer>
       </Modal>

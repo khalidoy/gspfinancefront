@@ -1,5 +1,4 @@
 // src/components/PaymentsReport.jsx
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -22,6 +21,7 @@ import {
   Legend,
 } from "chart.js";
 import "./PaymentsReport.css"; // Import the CSS file
+import { useTranslation } from "react-i18next";
 
 ChartJS.register(
   CategoryScale,
@@ -33,6 +33,7 @@ ChartJS.register(
 );
 
 const PaymentsReport = () => {
+  const { t } = useTranslation();
   const [schoolYearPeriods, setSchoolYearPeriods] = useState([]);
   const [selectedSchoolYear, setSelectedSchoolYear] = useState("");
   const [monthlyData, setMonthlyData] = useState({});
@@ -67,17 +68,18 @@ const PaymentsReport = () => {
         setSchoolYearPeriods(response.data.data);
       } catch (err) {
         console.error("Error fetching school year periods:", err);
-        setError("Failed to fetch school year periods.");
+        setError(t("failed_to_fetch_school_year_periods"));
       }
     };
 
     fetchSchoolYearPeriods();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch payments report data based on selected school year
   const fetchPaymentsReport = async () => {
     if (!selectedSchoolYear) {
-      setError("Please select a school year period.");
+      setError(t("please_select_school_year_period"));
       return;
     }
 
@@ -98,7 +100,7 @@ const PaymentsReport = () => {
       setLoading(false);
     } catch (err) {
       console.error("Error fetching payments report:", err);
-      setError(err.response?.data?.error || "Failed to fetch payments report.");
+      setError(err.response?.data?.error || t("failed_to_fetch_report"));
       setLoading(false);
     }
   };
@@ -132,7 +134,7 @@ const PaymentsReport = () => {
       labels,
       datasets: [
         {
-          label: "Number of Students",
+          label: t("number_of_students"),
           data,
           backgroundColor: "rgba(153, 102, 255, 0.6)",
         },
@@ -167,18 +169,18 @@ const PaymentsReport = () => {
 
   return (
     <div className="payments-container">
-      <h1 className="payments-heading">Payments Report</h1>
+      <h1 className="payments-heading">{t("payments_report_title")}</h1>
 
       {/* School Year Selection */}
       <Form className="payments-form">
         <Form.Group controlId="schoolYearSelect">
-          <Form.Label>Select School Year Period</Form.Label>
+          <Form.Label>{t("select_school_year_period")}</Form.Label>
           <Form.Control
             as="select"
             value={selectedSchoolYear}
             onChange={handleSchoolYearChange}
           >
-            <option value="">-- Select School Year Period --</option>
+            <option value="">{t("select_a_school_year_period")}</option>
             {schoolYearPeriods.map((period) => (
               <option key={period.id} value={period.name}>
                 {period.name}
@@ -201,7 +203,7 @@ const PaymentsReport = () => {
               aria-hidden="true"
             />
           ) : (
-            "Get Report"
+            t("get_report")
           )}
         </Button>
       </Form>
@@ -217,7 +219,7 @@ const PaymentsReport = () => {
       {loading && (
         <div className="spinner-container">
           <Spinner animation="border" role="status">
-            <span className="sr-only">Loading...</span>
+            <span className="sr-only">{t("loading")}</span>
           </Spinner>
         </div>
       )}
@@ -239,23 +241,23 @@ const PaymentsReport = () => {
               return (
                 <Accordion.Item eventKey={String(idx)} key={idx}>
                   <Accordion.Header>
-                    <strong>{monthName}</strong>
+                    <strong>{t(monthName.toLowerCase())}</strong>
                   </Accordion.Header>
                   <Accordion.Body>
                     {/* Monthly Summary */}
                     <section className="payments-section">
-                      <h4>Monthly Summary</h4>
+                      <h4>{t("monthly_summary")}</h4>
                       <Table striped bordered hover className="payments-table">
                         <tbody>
                           <tr>
                             <td>
-                              <strong>Number of Students</strong>
+                              <strong>{t("number_of_students")}</strong>
                             </td>
                             <td>{monthData.students.length}</td>
                           </tr>
                           <tr>
                             <td>
-                              <strong>Total Agreed Payment (DH)</strong>
+                              <strong>{t("total_agreed_payment_dh")}</strong>
                             </td>
                             <td>
                               {monthData.total_agreed.toLocaleString()} DH
@@ -267,12 +269,12 @@ const PaymentsReport = () => {
 
                     {/* Payment Statistics */}
                     <section className="payments-section">
-                      <h4>Payment Statistics</h4>
+                      <h4>{t("payment_statistics")}</h4>
                       <Table bordered hover className="payments-table">
                         <tbody>
                           <tr>
                             <td>
-                              <strong>Average Agreed Payment (DH)</strong>
+                              <strong>{t("average_agreed_payment_dh")}</strong>
                             </td>
                             <td>
                               {paymentStats.average_agreed_payment.toLocaleString()}{" "}
@@ -281,13 +283,13 @@ const PaymentsReport = () => {
                           </tr>
                           <tr>
                             <td>
-                              <strong>Minimum Agreed Payment (DH)</strong>
+                              <strong>{t("minimum_agreed_payment_dh")}</strong>
                             </td>
                             <td
                               style={{ cursor: "pointer", color: "blue" }}
                               onClick={() =>
                                 handleShowModal(
-                                  `Minimum Agreed Payment - ${monthName}`,
+                                  `${t("minimum_agreed_payment")} ${monthName}`,
                                   minStudents
                                 )
                               }
@@ -298,13 +300,13 @@ const PaymentsReport = () => {
                           </tr>
                           <tr>
                             <td>
-                              <strong>Maximum Agreed Payment (DH)</strong>
+                              <strong>{t("maximum_agreed_payment_dh")}</strong>
                             </td>
                             <td
                               style={{ cursor: "pointer", color: "blue" }}
                               onClick={() =>
                                 handleShowModal(
-                                  `Maximum Agreed Payment - ${monthName}`,
+                                  `${t("maximum_agreed_payment")} ${monthName}`,
                                   maxStudents
                                 )
                               }
@@ -319,12 +321,12 @@ const PaymentsReport = () => {
 
                     {/* Payment Distribution */}
                     <section className="payments-section">
-                      <h4>Payment Distribution</h4>
+                      <h4>{t("payment_distribution")}</h4>
                       <Table striped bordered hover className="payments-table">
                         <thead>
                           <tr>
-                            <th>Agreed Payment (DH)</th>
-                            <th>Number of Students</th>
+                            <th>{t("agreed_payment_dh")}</th>
+                            <th>{t("number_of_students")}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -334,7 +336,9 @@ const PaymentsReport = () => {
                                 style={{ cursor: "pointer", color: "blue" }}
                                 onClick={() =>
                                   handleShowModal(
-                                    `Students with Agreed Payment ${item.amount} DH - ${monthName}`,
+                                    `${t(
+                                      "students_with_agreed_payment_text"
+                                    )} ${item.amount.toLocaleString()} DH - ${monthName}`,
                                     getStudentsByPayment(monthName, item.amount)
                                   )
                                 }
@@ -350,7 +354,7 @@ const PaymentsReport = () => {
 
                     {/* Payment Distribution Chart */}
                     <section className="payments-section">
-                      <h4>Payment Distribution Chart</h4>
+                      <h4>{t("payment_distribution_chart")}</h4>
                       <Bar
                         data={getBarChartData(monthName)}
                         options={{
@@ -361,7 +365,9 @@ const PaymentsReport = () => {
                             },
                             title: {
                               display: true,
-                              text: `Payment Distribution for ${monthName}`,
+                              text: `${t(
+                                "payment_distribution_for"
+                              )} ${monthName}`,
                             },
                           },
                         }}
@@ -385,8 +391,8 @@ const PaymentsReport = () => {
             <Table striped bordered hover>
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Agreed Payment (DH)</th>
+                  <th>{t("student_name")}</th>
+                  <th>{t("agreed_payment_dh")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -399,12 +405,12 @@ const PaymentsReport = () => {
               </tbody>
             </Table>
           ) : (
-            <p>No students found.</p>
+            <p>{t("no_students_found")}</p>
           )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
-            Close
+            {t("close")}
           </Button>
         </Modal.Footer>
       </Modal>

@@ -1,12 +1,13 @@
-// src/NormalPayments.js
-
+// src/pages/NormalPayments.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table, Spinner, Alert, Form, Button, Modal } from "react-bootstrap";
 import "./NormalPayments.css"; // Import the custom CSS file
 import html2canvas from "html2canvas"; // Import html2canvas
+import { useTranslation } from "react-i18next";
 
 function NormalPayments() {
+  const { t } = useTranslation();
   const [reportData, setReportData] = useState([]);
   const [schoolYearPeriods, setSchoolYearPeriods] = useState([]);
   const [selectedSchoolYear, setSelectedSchoolYear] = useState("");
@@ -19,18 +20,18 @@ function NormalPayments() {
   const [unknownStudents, setUnknownStudents] = useState([]); // State to hold unknown students
   const [showUnknownModal, setShowUnknownModal] = useState(false); // State to control modal visibility
 
-  // Map month numbers to month names
+  // Map month numbers to month names using translations
   const monthNames = {
-    9: "September",
-    10: "October",
-    11: "November",
-    12: "December",
-    1: "January",
-    2: "February",
-    3: "March",
-    4: "April",
-    5: "May",
-    6: "June",
+    9: t("september"),
+    10: t("october"),
+    11: t("november"),
+    12: t("december"),
+    1: t("january"),
+    2: t("february"),
+    3: t("march"),
+    4: t("april"),
+    5: t("may"),
+    6: t("june"),
   };
 
   // Fetch available school year periods on component mount
@@ -43,11 +44,12 @@ function NormalPayments() {
         setSchoolYearPeriods(response.data.data);
       } catch (err) {
         console.error("Error fetching school year periods:", err);
-        setError("Failed to fetch school year periods.");
+        setError(t("failed_to_fetch_school_year_periods"));
       }
     };
 
     fetchSchoolYearPeriods();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchReport = async (schoolyear_id, schoolyear_name) => {
@@ -77,7 +79,7 @@ function NormalPayments() {
       setLoading(false);
     } catch (err) {
       console.error("Error fetching report:", err);
-      setError("Failed to fetch report");
+      setError(t("failed_to_fetch_report"));
       setLoading(false);
     }
   };
@@ -109,17 +111,19 @@ function NormalPayments() {
 
   return (
     <div className="normal-payments-container">
-      <h1 className="normal-payments-title">Normal Payments Report</h1>
+      <h1 className="normal-payments-title">
+        {t("normal_payments_report_title")}
+      </h1>
 
       {/* Dropdown for School Year Period selection */}
       <Form.Group controlId="schoolYearSelect">
-        <Form.Label>Select School Year Period</Form.Label>
+        <Form.Label>{t("select_school_year_period")}</Form.Label>
         <Form.Control
           as="select"
           value={selectedSchoolYear}
           onChange={handleSchoolYearChange}
         >
-          <option value="">Select a School Year Period</option>
+          <option value="">{t("select_a_school_year_period")}</option>
           {schoolYearPeriods.map((period) => (
             <option key={period._id.$oid} value={period._id.$oid}>
               {period.name}
@@ -131,7 +135,7 @@ function NormalPayments() {
       {loading && (
         <div className="spinner-container">
           <Spinner animation="border" role="status">
-            <span className="sr-only">Loading...</span>
+            <span className="sr-only">{t("loading")}</span>
           </Spinner>
         </div>
       )}
@@ -148,7 +152,7 @@ function NormalPayments() {
           onClick={handleShowUnknownModal}
           style={{ cursor: "pointer" }}
         >
-          {unknownStudents.length} Unknown Student Agreed Payments
+          {unknownStudents.length} {t("unknown_student_agreed_payments")}
         </Alert>
       )}
 
@@ -158,17 +162,17 @@ function NormalPayments() {
           <div id="report-table">
             {/* Add the school year period and title in the screenshot */}
             <h2 className="report-title">
-              School Year Period: {selectedSchoolYearName}
+              {t("school_year_period")} {selectedSchoolYearName}
             </h2>
 
             <Table className="normal-payments-table" bordered hover>
               <thead>
                 <tr>
-                  <th>Month</th>
-                  <th>Monthly Agreed Payments</th>
-                  <th>Transport Agreed Payments</th>
-                  <th>Total Expenses</th>
-                  <th>Net Profit</th>
+                  <th>{t("month")}</th>
+                  <th>{t("monthly_agreed_payments")}</th>
+                  <th>{t("transport_agreed_payments")}</th>
+                  <th>{t("total_expenses")}</th>
+                  <th>{t("net_profit")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -176,21 +180,21 @@ function NormalPayments() {
                   <tr key={row.month}>
                     <td>{monthNames[row.month] || row.month}</td>
                     <td>
-                      {(row.total_monthly_agreed_payments || 0).toFixed(2)}
+                      {(row.total_monthly_agreed_payments || 0).toFixed(2)} DH
                     </td>
                     <td>
-                      {(row.total_transport_agreed_payments || 0).toFixed(2)}
+                      {(row.total_transport_agreed_payments || 0).toFixed(2)} DH
                     </td>
-                    <td>{(row.total_expenses || 0).toFixed(2)}</td>
-                    <td>{(row.net_profit || 0).toFixed(2)}</td>
+                    <td>{(row.total_expenses || 0).toFixed(2)} DH</td>
+                    <td>{(row.net_profit || 0).toFixed(2)} DH</td>
                   </tr>
                 ))}
                 <tr>
                   <td>
-                    <strong>Total Yearly</strong>
+                    <strong>{t("total_yearly")}</strong>
                   </td>
                   <td>
-                    <strong>{totalYearlyIncome.toFixed(2)}</strong>
+                    <strong>{totalYearlyIncome.toFixed(2)} DH</strong>
                   </td>
                   <td>
                     <strong>
@@ -200,17 +204,19 @@ function NormalPayments() {
                             acc + (row.total_transport_agreed_payments || 0),
                           0
                         )
-                        .toFixed(2)}
+                        .toFixed(2)}{" "}
+                      DH
                     </strong>
                   </td>
                   <td>
-                    <strong>0.00</strong>
+                    <strong>0.00 DH</strong>
                   </td>
                   <td>
                     <strong>
                       {reportData
                         .reduce((acc, row) => acc + (row.net_profit || 0), 0)
-                        .toFixed(2)}
+                        .toFixed(2)}{" "}
+                      DH
                     </strong>
                   </td>
                 </tr>
@@ -220,7 +226,7 @@ function NormalPayments() {
             {/* Additional Information */}
             <div className="additional-info">
               <p>
-                <strong>Total Number of Students Who Paid Insurance:</strong>{" "}
+                <strong>{t("total_number_of_students_paid_insurance")}</strong>{" "}
                 {totalStudentsWithInsurance || "0"}
               </p>
             </div>
@@ -228,7 +234,7 @@ function NormalPayments() {
 
           {/* Download Button */}
           <Button className="download-button" onClick={handleDownload}>
-            Download
+            {t("download")}
           </Button>
         </>
       )}
@@ -236,17 +242,19 @@ function NormalPayments() {
       {/* Modal to display unknown students */}
       <Modal show={showUnknownModal} onHide={handleCloseUnknownModal} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Unknown Students with Zero Agreed Payments</Modal.Title>
+          <Modal.Title>
+            {t("unknown_students_with_zero_agreed_payments")}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {unknownStudents.length === 0 ? (
-            <p>No unknown students found.</p>
+            <p>{t("no_unknown_students_found")}</p>
           ) : (
             <Table striped bordered hover>
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Student Name</th>
+                  <th>{t("student_name")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -262,7 +270,7 @@ function NormalPayments() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseUnknownModal}>
-            Close
+            {t("close")}
           </Button>
         </Modal.Footer>
       </Modal>

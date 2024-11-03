@@ -6,8 +6,11 @@ import { Table, Spinner, Alert, Form, Button, Modal } from "react-bootstrap";
 import "./CreditReports.css";
 import html2canvas from "html2canvas";
 import moment from "moment"; // For formatting date
+import { useTranslation } from "react-i18next";
 
 function CreditReports() {
+  const { t } = useTranslation();
+
   const [schoolYearPeriods, setSchoolYearPeriods] = useState([]);
   const [selectedSchoolYear, setSelectedSchoolYear] = useState("");
   const [reportData, setReportData] = useState([]);
@@ -20,16 +23,16 @@ function CreditReports() {
 
   // Map month numbers to month names
   const monthNames = {
-    9: "September",
-    10: "October",
-    11: "November",
-    12: "December",
-    1: "January",
-    2: "February",
-    3: "March",
-    4: "April",
-    5: "May",
-    6: "June",
+    9: t("September"),
+    10: t("October"),
+    11: t("November"),
+    12: t("December"),
+    1: t("January"),
+    2: t("February"),
+    3: t("March"),
+    4: t("April"),
+    5: t("May"),
+    6: t("June"),
   };
 
   // Fetch available school year periods on component mount
@@ -42,11 +45,12 @@ function CreditReports() {
         setSchoolYearPeriods(response.data.data);
       } catch (err) {
         console.error("Error fetching school year periods:", err);
+        setError(t("failed_to_fetch_school_year_periods"));
       }
     };
 
     fetchSchoolYearPeriods();
-  }, []);
+  }, [t]);
 
   // Fetch report data for all months of the selected school year period
   const fetchReport = async () => {
@@ -61,7 +65,7 @@ function CreditReports() {
       setLoading(false);
     } catch (err) {
       console.error("Error fetching report:", err);
-      setError("Failed to fetch report");
+      setError(t("failed_to_fetch_report"));
       setLoading(false);
     }
   };
@@ -96,18 +100,20 @@ function CreditReports() {
 
   return (
     <div className="credit-reports-container" id="report-container">
-      <h1 className="credit-reports-title">Credit Report</h1>
-      <p className="report-date">Date: {todayDate}</p>
+      <h1 className="credit-reports-title">{t("credit_report")}</h1>
+      <p className="report-date">
+        {t("report_date")} {todayDate}
+      </p>
 
       {/* Dropdown for School Year Period selection */}
       <Form.Group controlId="schoolYearSelect">
-        <Form.Label>Select School Year Period</Form.Label>
+        <Form.Label>{t("select_school_year_period")}</Form.Label>
         <Form.Control
           as="select"
           value={selectedSchoolYear}
           onChange={handleSchoolYearChange}
         >
-          <option value="">Select a School Year Period</option>
+          <option value="">{t("select_school_year_period")}</option>
           {schoolYearPeriods.map((period) => (
             <option key={period._id.$oid} value={period._id.$oid}>
               {period.name}
@@ -121,25 +127,25 @@ function CreditReports() {
         disabled={!selectedSchoolYear}
         className="get-report-button"
       >
-        Get Report
+        {t("get_report")}
       </Button>
 
       {loading && (
         <div className="spinner-container">
           <Spinner animation="border" role="status">
-            <span className="sr-only">Loading...</span>
+            <span className="sr-only">{t("loading")}</span>
           </Spinner>
         </div>
       )}
       {error && (
         <Alert className="alert-container" variant="danger">
-          {error}
+          {t("failed_to_fetch_report")}
         </Alert>
       )}
       {!loading && !error && reportData.length > 0 && (
         <div>
           <h2 className="school-year-period">
-            School Year Period:{" "}
+            {t("school_year_period_label")}{" "}
             {
               schoolYearPeriods.find(
                 (period) => period._id.$oid === selectedSchoolYear
@@ -149,10 +155,10 @@ function CreditReports() {
           <Table className="credit-reports-table" bordered hover>
             <thead>
               <tr>
-                <th>Month</th>
-                <th>Total Paid (DH)</th>
-                <th>Total Left (DH)</th>
-                <th>Unpaid Students</th>
+                <th>{t("month")}</th>
+                <th>{t("total_paid")}</th>
+                <th>{t("total_left")}</th>
+                <th>{t("unpaid_students")}</th>
               </tr>
             </thead>
             <tbody>
@@ -167,15 +173,17 @@ function CreditReports() {
                         variant="link"
                         onClick={() =>
                           handleShowModal(
-                            `Unpaid Students - ${monthNames[row.month]}`,
+                            `${t("unpaid_students_title")}${
+                              monthNames[row.month]
+                            }`,
                             row.unpaid_students
                           )
                         }
                       >
-                        Show Unpaid Students
+                        {t("show_unpaid_students")}
                       </Button>
                     ) : (
-                      "None"
+                      t("none")
                     )}
                   </td>
                 </tr>
@@ -188,7 +196,7 @@ function CreditReports() {
             onClick={handleDownload}
             disabled={!selectedSchoolYear}
           >
-            Download
+            {t("download")}
           </Button>
         </div>
       )}
@@ -203,11 +211,11 @@ function CreditReports() {
             <Table striped bordered hover>
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Agreed Payment (DH)</th>
-                  <th>Real Payment (DH)</th>
-                  <th>Agreed Transport (DH)</th>
-                  <th>Real Transport (DH)</th>
+                  <th>{t("name")}</th>
+                  <th>{t("agreed_payment")}</th>
+                  <th>{t("real_payment")}</th>
+                  <th>{t("agreed_transport")}</th>
+                  <th>{t("real_transport")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -223,12 +231,12 @@ function CreditReports() {
               </tbody>
             </Table>
           ) : (
-            <p>No unpaid students.</p>
+            <p>{t("no_unpaid_students")}</p>
           )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
-            Close
+            {t("close")}
           </Button>
         </Modal.Footer>
       </Modal>

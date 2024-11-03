@@ -1,6 +1,5 @@
 // src/pages/DailyAccounting.jsx
 import React, { useState, useEffect, useRef } from "react";
-
 import {
   Container,
   Table,
@@ -15,10 +14,13 @@ import { FaDownload } from "react-icons/fa"; // Import download icon
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import "./DailyAccounting.css"; // Import your CSS file
+import { useTranslation } from "react-i18next";
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL + "/accounting"; // Adjust the URL according to your backend
 
 function DailyAccounting() {
+  const { t } = useTranslation();
+
   const [payments, setPayments] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [totalPayments, setTotalPayments] = useState(0);
@@ -70,7 +72,7 @@ function DailyAccounting() {
       setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
-      setError("Failed to fetch today's payments and expenses.");
+      setError(t("failed_to_fetch_payments_expenses"));
       setLoading(false);
     }
   };
@@ -90,7 +92,7 @@ function DailyAccounting() {
       }
     } catch (error) {
       console.error("Error fetching validation status:", error);
-      setError("Failed to fetch validation status.");
+      setError(t("failed_to_fetch_validation_status"));
     }
   };
 
@@ -101,16 +103,18 @@ function DailyAccounting() {
       const response = await axios.post(`${API_BASE_URL}/daily/validate`);
 
       if (response.data.status === "success") {
-        setSuccess("Daily accounting has been successfully validated.");
+        setSuccess(t("validated"));
         setIsValidated(true);
         fetchPaymentsAndExpenses(); // Optionally refresh the data
       } else {
-        setError("Failed to validate daily accounting.");
+        setError(t("failed_to_validate_accounting"));
       }
       setValidateLoading(false);
     } catch (error) {
       console.error("Error validating accounting:", error);
-      setError(error.response?.data?.message || "Error validating accounting.");
+      setError(
+        error.response?.data?.message || t("failed_to_validate_accounting")
+      );
       setValidateLoading(false);
     }
   };
@@ -158,7 +162,7 @@ function DailyAccounting() {
           pdf.setPage(i);
           pdf.setFontSize(10);
           pdf.text(
-            `Page ${i} of ${totalPages}`,
+            `${t("page")} ${i} ${t("of")} ${totalPages}`,
             pdf.internal.pageSize.getWidth() - 30,
             pdf.internal.pageSize.getHeight() - 10
           );
@@ -168,7 +172,7 @@ function DailyAccounting() {
       })
       .catch((error) => {
         console.error("Error generating PDF:", error);
-        setError("Failed to download the report.");
+        setError(t("failed_to_download_report"));
       })
       .finally(() => {
         setDownloadLoading(false);
@@ -178,8 +182,10 @@ function DailyAccounting() {
   return (
     <Container className="mt-4">
       {/* Main Title with Date */}
-      <h1 className="mb-2 text-center">Daily Accounting Report</h1>
-      <h2 className="mb-4 text-center">{todayDate}</h2>{" "}
+      <h1 className="mb-2 text-center">{t("daily_accounting_report")}</h1>
+      <h2 className="mb-4 text-center">
+        {t("date")} {todayDate}
+      </h2>{" "}
       {/* Subtitle with Date */}
       {/* Display Error Alert */}
       {error && (
@@ -197,7 +203,7 @@ function DailyAccounting() {
       {loading ? (
         <div className="text-center">
           <Spinner animation="border" role="status" />
-          <span className="ml-2">Loading data...</span>
+          <span className="ml-2">{t("loading_data")}</span>
         </div>
       ) : (
         <>
@@ -206,15 +212,15 @@ function DailyAccounting() {
             <Row>
               {/* Payments Table */}
               <Col md={6}>
-                <h4>Today's Payments</h4>
+                <h4>{t("todays_payments")}</h4>
                 <Table striped bordered hover>
                   <thead>
                     <tr>
-                      <th>#</th>
-                      <th>Student</th>
-                      <th>Amount (DH)</th>
-                      <th>Type</th>
-                      <th>Month</th>
+                      <th>{t("number")}</th>
+                      <th>{t("student")}</th>
+                      <th>{t("amount_dh")}</th>
+                      <th>{t("type")}</th>
+                      <th>{t("month")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -238,7 +244,7 @@ function DailyAccounting() {
                     {payments.length === 0 && (
                       <tr>
                         <td colSpan="5" className="text-center">
-                          No payments today.
+                          {t("no_payments_today")}
                         </td>
                       </tr>
                     )}
@@ -246,7 +252,7 @@ function DailyAccounting() {
                   <tfoot>
                     <tr className="total-payments">
                       <td colSpan="2" style={{ textAlign: "right" }}>
-                        <strong>Total Payments</strong>
+                        <strong>{t("total_payments")}</strong>
                       </td>
                       <td colSpan="3">{totalPayments.toFixed(2)} DH</td>
                     </tr>
@@ -256,13 +262,13 @@ function DailyAccounting() {
 
               {/* Expenses Table */}
               <Col md={6}>
-                <h4>Today's Expenses</h4>
+                <h4>{t("todays_expenses")}</h4>
                 <Table striped bordered hover>
                   <thead>
                     <tr>
-                      <th>#</th>
-                      <th>Expense Type</th>
-                      <th>Amount (DH)</th>
+                      <th>{t("number")}</th>
+                      <th>{t("expense_type")}</th>
+                      <th>{t("amount_dh")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -276,7 +282,7 @@ function DailyAccounting() {
                     {expenses.length === 0 && (
                       <tr>
                         <td colSpan="3" className="text-center">
-                          No expenses today.
+                          {t("no_expenses_today")}
                         </td>
                       </tr>
                     )}
@@ -284,7 +290,7 @@ function DailyAccounting() {
                   <tfoot>
                     <tr className="total-expenses">
                       <td colSpan="2" style={{ textAlign: "right" }}>
-                        <strong>Total Expenses</strong>
+                        <strong>{t("total_expenses")}</strong>
                       </td>
                       <td>{totalExpenses.toFixed(2)} DH</td>
                     </tr>
@@ -306,7 +312,7 @@ function DailyAccounting() {
                   borderRadius: "5px",
                 }}
               >
-                Net Profit: {netProfit.toFixed(2)} DH
+                {t("net_profit")} {netProfit.toFixed(2)} DH
               </h5>
             </div>
           </div>
@@ -314,21 +320,23 @@ function DailyAccounting() {
           {/* Hidden Download Report Section */}
           <div className="hidden-download-report" ref={downloadRef}>
             {/* Main Title with Date */}
-            <h1 className="mb-2 text-center">Daily Accounting Report</h1>
-            <h2 className="mb-4 text-center">{todayDate}</h2>{" "}
+            <h1 className="mb-2 text-center">{t("daily_accounting_report")}</h1>
+            <h2 className="mb-4 text-center">
+              {t("date")} {todayDate}
+            </h2>{" "}
             {/* Subtitle with Date */}
             {/* Payments Table */}
             <Row>
               <Col>
-                <h4>Today's Payments</h4>
+                <h4>{t("todays_payments")}</h4>
                 <Table striped bordered hover>
                   <thead>
                     <tr>
-                      <th>#</th>
-                      <th>Student</th>
-                      <th>Amount (DH)</th>
-                      <th>Type</th>
-                      <th>Month</th>
+                      <th>{t("number")}</th>
+                      <th>{t("student")}</th>
+                      <th>{t("amount_dh")}</th>
+                      <th>{t("type")}</th>
+                      <th>{t("month")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -352,7 +360,7 @@ function DailyAccounting() {
                     {payments.length === 0 && (
                       <tr>
                         <td colSpan="5" className="text-center">
-                          No payments today.
+                          {t("no_payments_today")}
                         </td>
                       </tr>
                     )}
@@ -360,7 +368,7 @@ function DailyAccounting() {
                   <tfoot>
                     <tr className="total-payments">
                       <td colSpan="2" style={{ textAlign: "right" }}>
-                        <strong>Total Payments</strong>
+                        <strong>{t("total_payments")}</strong>
                       </td>
                       <td colSpan="3">{totalPayments.toFixed(2)} DH</td>
                     </tr>
@@ -371,13 +379,13 @@ function DailyAccounting() {
             {/* Expenses Table */}
             <Row className="mt-4">
               <Col>
-                <h4>Today's Expenses</h4>
+                <h4>{t("todays_expenses")}</h4>
                 <Table striped bordered hover>
                   <thead>
                     <tr>
-                      <th>#</th>
-                      <th>Expense Type</th>
-                      <th>Amount (DH)</th>
+                      <th>{t("number")}</th>
+                      <th>{t("expense_type")}</th>
+                      <th>{t("amount_dh")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -391,7 +399,7 @@ function DailyAccounting() {
                     {expenses.length === 0 && (
                       <tr>
                         <td colSpan="3" className="text-center">
-                          No expenses today.
+                          {t("no_expenses_today")}
                         </td>
                       </tr>
                     )}
@@ -399,7 +407,7 @@ function DailyAccounting() {
                   <tfoot>
                     <tr className="total-expenses">
                       <td colSpan="2" style={{ textAlign: "right" }}>
-                        <strong>Total Expenses</strong>
+                        <strong>{t("total_expenses")}</strong>
                       </td>
                       <td>{totalExpenses.toFixed(2)} DH</td>
                     </tr>
@@ -420,7 +428,7 @@ function DailyAccounting() {
                   borderRadius: "5px",
                 }}
               >
-                Net Profit: {netProfit.toFixed(2)} DH
+                {t("net_profit")} {netProfit.toFixed(2)} DH
               </h5>
             </div>
             {/* Signature Section - Always Displayed */}
@@ -428,11 +436,11 @@ function DailyAccounting() {
               <Row className="mt-5">
                 <Col md={6} className="text-center">
                   <div className="signature-line"></div>
-                  <p>Authorized Signatory 1</p>
+                  <p>{t("authorized_signatory_1")}</p>
                 </Col>
                 <Col md={6} className="text-center">
                   <div className="signature-line"></div>
-                  <p>Authorized Signatory 2</p>
+                  <p>{t("authorized_signatory_2")}</p>
                 </Col>
               </Row>
             </div>
@@ -456,12 +464,12 @@ function DailyAccounting() {
                     role="status"
                     aria-hidden="true"
                   />
-                  &nbsp;Validating...
+                  &nbsp;{t("validating")}...
                 </>
               ) : isValidated ? (
-                "Validated"
+                t("validated")
               ) : (
-                "Validate Daily Accounting"
+                t("validate_daily_accounting")
               )}
             </Button>
 
@@ -482,12 +490,12 @@ function DailyAccounting() {
                       role="status"
                       aria-hidden="true"
                     />
-                    &nbsp;Downloading...
+                    &nbsp;{t("download_report")}...
                   </>
                 ) : (
                   <>
                     <FaDownload style={{ marginRight: "5px" }} />
-                    Download Report
+                    {t("download_report")}
                   </>
                 )}
               </Button>
