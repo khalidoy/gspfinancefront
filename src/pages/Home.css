@@ -7,6 +7,8 @@
   --color-bg-table-header: #343a40;
   --color-text-table-header: #000000;
   --color-hover-row: #3ffcff;
+  --color-hover-cell: #f0f8ff;
+  /* Added for cell hover */
   --color-highlight-red: #f8d7da;
   --color-highlight-green: #d4edda;
   --color-highlight-yellow: #fff3cd;
@@ -144,16 +146,30 @@
   font-weight: bold;
 }
 
+/* Remove row hover styles */
+
+/*
 .students-table tr.clickable-row:hover {
-  /* Removed background-color to prevent conflict with cell backgrounds */
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-/* Apply hover background to all <td> within the hovered <tr> */
-
 .students-table tr.clickable-row:hover td {
   background-color: var(--color-hover-row);
+}
+
+.students-table tr.clickable-row:hover td.highlight-red,
+.students-table tr.clickable-row:hover td.highlight-green,
+.students-table tr.clickable-row:hover td.highlight-yellow {
+  background-color: var(--color-hover-row) !important;
+}
+*/
+
+/* Add hover effect to individual table cells */
+
+.students-table td:hover {
+  background-color: var(--color-hover-cell);
+  cursor: pointer;
 }
 
 /* Highlight Classes Scoped to Student Table */
@@ -175,14 +191,6 @@
 .students-table .disabled-cell {
   background-color: var(--color-disabled-cell-bg);
   color: var(--color-disabled-cell-text);
-}
-
-/* Override Highlight Classes on Hover */
-
-.students-table tr.clickable-row:hover td.highlight-red,
-.students-table tr.clickable-row:hover td.highlight-green,
-.students-table tr.clickable-row:hover td.highlight-yellow {
-  background-color: var(--color-hover-row) !important;
 }
 
 /* Modal Styling */

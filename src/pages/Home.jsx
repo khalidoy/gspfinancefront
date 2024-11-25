@@ -1,21 +1,18 @@
-// src/Home.js
+// src/Home.jsx
 
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import "./Home.css";
-import {
-  Modal,
-  Button,
-  Form,
-  Alert,
-  Spinner,
-  InputGroup,
-  Row,
-  Col,
-} from "react-bootstrap";
-import { FaSearch, FaFilter, FaPlus } from "react-icons/fa";
+import { Button, Alert } from "react-bootstrap";
+import { FaPlus } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useTranslation } from "react-i18next";
+
+import SchoolYearModal from "./../components/SchoolYearModal";
+import StudentModal from "./../components/StudentModal";
+import StudentStatistics from "./../components/StudentStatistics";
+import Filters from "./../components/Filters";
+import StudentTable from "./../components/StudentTable";
 
 // Configure axios with a base URL
 const api = axios.create({
@@ -36,834 +33,6 @@ const months = [
   { key: "m5", displayName: "M5", monthNum: 5, order: 9 },
   { key: "m6", displayName: "M6", monthNum: 6, order: 10 },
 ];
-
-// Reusable component for School Year Period Modal
-const SchoolYearModal = ({
-  show,
-  handleClose,
-  handleCreate,
-  creating,
-  error,
-  formData,
-  setFormData,
-}) => {
-  const { t } = useTranslation();
-
-  return (
-    <Modal show={show} onHide={handleClose} centered>
-      <Modal.Header closeButton>
-        <Modal.Title>{t("add_new_school_year_period_title")}</Modal.Title>
-      </Modal.Header>
-      <Form onSubmit={handleCreate}>
-        <Modal.Body>
-          {error && (
-            <Alert
-              variant="danger"
-              onClose={() => setFormData({ ...formData, error: "" })}
-              dismissible
-            >
-              {error}
-            </Alert>
-          )}
-          <Form.Group controlId="newSchoolYearName">
-            <Form.Label>{t("name")}</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder={t("enter_name")}
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              required
-            />
-          </Form.Group>
-
-          <Form.Group controlId="newSchoolYearStartDate">
-            <Form.Label>{t("start_date")}</Form.Label>
-            <Form.Control
-              type="date"
-              value={formData.startDate}
-              onChange={(e) =>
-                setFormData({ ...formData, startDate: e.target.value })
-              }
-              required
-            />
-          </Form.Group>
-
-          <Form.Group controlId="newSchoolYearEndDate">
-            <Form.Label>{t("end_date")}</Form.Label>
-            <Form.Control
-              type="date"
-              value={formData.endDate}
-              onChange={(e) =>
-                setFormData({ ...formData, endDate: e.target.value })
-              }
-              required
-            />
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            {t("cancel")}
-          </Button>
-          <Button variant="primary" type="submit" disabled={creating}>
-            {creating ? (
-              <>
-                <Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                />{" "}
-                {t("creating")}...
-              </>
-            ) : (
-              t("create")
-            )}
-          </Button>
-        </Modal.Footer>
-      </Form>
-    </Modal>
-  );
-};
-
-// Reusable component for Student Modal
-const StudentModal = ({
-  show,
-  handleClose,
-  student,
-  setStudent,
-  originalStudent,
-  handleSave,
-  handleDelete,
-  months,
-  autocompleteEnabled,
-  setAutocompleteEnabled,
-  error,
-  setError,
-}) => {
-  const { t } = useTranslation();
-
-  if (!student) return null;
-
-  const handlePaymentChange = (type, key, value) => {
-    if (type === "real") {
-      handleRealPaymentChange(key, value);
-    } else if (type === "agreed") {
-      handleAgreedPaymentChange(key, value);
-    }
-  };
-
-  const handleRealPaymentChange = (key, value) => {
-    const agreedKey = key.replace("_real", "_agreed");
-    const agreedValue = Number(
-      student.payments.agreed_payments?.[agreedKey] || 0
-    );
-    if (agreedValue <= 0 && Number(value) > 0) {
-      setError(t("cannot_set_real_payment_without_agreed"));
-      return;
-    }
-
-    setStudent((prev) => ({
-      ...prev,
-      payments: {
-        ...prev.payments,
-        real_payments: {
-          ...prev.payments.real_payments,
-          [key]: value === "" ? 0 : Number(value),
-        },
-      },
-    }));
-  };
-
-  const handleAgreedPaymentChange = (key, value) => {
-    const isTransport = key.includes("_transport_agreed");
-    const paymentCategory = isTransport
-      ? "transport_agreed"
-      : key === "insurance_agreed"
-      ? "insurance_agreed"
-      : "monthly_agreed";
-    const newValue = value === "" ? "0" : value;
-
-    setStudent((prev) => {
-      if (!prev) return prev;
-
-      const updatedAgreedPayments = { ...prev.payments.agreed_payments };
-      updatedAgreedPayments[key] = newValue;
-
-      if (autocompleteEnabled) {
-        const keysToUpdate = Object.keys(updatedAgreedPayments).filter((k) => {
-          if (paymentCategory === "monthly_agreed") {
-            return (
-              k.endsWith("_agreed") &&
-              !k.includes("transport") &&
-              !k.includes("insurance")
-            );
-          } else if (paymentCategory === "transport_agreed") {
-            return k.endsWith("_transport_agreed") && k !== key;
-          }
-          return false;
-        });
-
-        keysToUpdate.forEach((k) => {
-          updatedAgreedPayments[k] = newValue;
-        });
-      }
-
-      return {
-        ...prev,
-        payments: {
-          ...prev.payments,
-          agreed_payments: updatedAgreedPayments,
-        },
-      };
-    });
-  };
-
-  return (
-    <Modal
-      show={show}
-      onHide={handleClose}
-      size="xl"
-      aria-labelledby="student-modal-title"
-      centered
-    >
-      <Modal.Header closeButton>
-        <Modal.Title id="student-modal-title" className="w-100 text-center">
-          {originalStudent ? t("edit_student") : t("add_new_student")}
-        </Modal.Title>
-      </Modal.Header>
-      <Form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSave();
-        }}
-      >
-        <Modal.Body>
-          {error && (
-            <Alert variant="danger" onClose={() => setError("")} dismissible>
-              {error}
-            </Alert>
-          )}
-          {/* Student Name */}
-          <Form.Group controlId="studentName" className="mb-3">
-            <Form.Label>{t("student_name")}</Form.Label>
-            <Form.Control
-              type="text"
-              value={student.name}
-              onChange={(e) =>
-                setStudent((prev) => ({ ...prev, name: e.target.value }))
-              }
-              required
-            />
-          </Form.Group>
-          {/* Joined Month */}
-          <h5>{t("joined_in")}</h5>
-          <Form.Control
-            as="select"
-            value={student.joined_month}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              const currentMonth = months.find((m) => m.monthNum === value);
-
-              if (!currentMonth) return;
-
-              const joinedOrder = currentMonth.order;
-              const previousMonths = months.filter(
-                (m) => m.order < joinedOrder
-              );
-
-              const hasPreviousPayments = previousMonths.some((m) => {
-                const realKey = `${m.key}_real`;
-                const agreedKey = `${m.key}_agreed`;
-                const transportRealKey = `${m.key}_transport_real`;
-                const transportAgreedKey = `${m.key}_transport_agreed`;
-                const insuranceReal =
-                  student.payments.real_payments.insurance_real;
-                const insuranceAgreed =
-                  student.payments.agreed_payments.insurance_agreed;
-
-                return (
-                  Number(student.payments.real_payments[realKey] || 0) > 0 ||
-                  Number(student.payments.agreed_payments[agreedKey] || 0) >
-                    0 ||
-                  Number(
-                    student.payments.real_payments[transportRealKey] || 0
-                  ) > 0 ||
-                  Number(
-                    student.payments.agreed_payments[transportAgreedKey] || 0
-                  ) > 0 ||
-                  Number(insuranceReal || 0) > 0 ||
-                  Number(insuranceAgreed || 0) > 0
-                );
-              });
-
-              if (
-                hasPreviousPayments &&
-                originalStudent?.joined_month !== value
-              ) {
-                setError(t("cannot_set_joined_month_with_previous_payments"));
-                return;
-              }
-
-              // Reset previous months' payments
-              const updatedRealPayments = { ...student.payments.real_payments };
-              const updatedAgreedPayments = {
-                ...student.payments.agreed_payments,
-              };
-
-              previousMonths.forEach((m) => {
-                updatedRealPayments[`${m.key}_real`] = 0;
-                updatedRealPayments[`${m.key}_transport_real`] = 0;
-                updatedAgreedPayments[`${m.key}_agreed`] = "0";
-                updatedAgreedPayments[`${m.key}_transport_agreed`] = "0";
-              });
-
-              setStudent((prev) => ({
-                ...prev,
-                joined_month: value,
-                payments: {
-                  ...prev.payments,
-                  real_payments: updatedRealPayments,
-                  agreed_payments: updatedAgreedPayments,
-                },
-              }));
-            }}
-            className="mb-3"
-            style={{ width: "200px" }}
-          >
-            {months.map((month) => (
-              <option key={month.key} value={month.monthNum}>
-                {month.displayName}
-              </option>
-            ))}
-          </Form.Control>
-          {/* Real Payments */}
-          <h5>{t("real_payments")}</h5>
-          <div className="table-responsive">
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th>{t("payment_type")}</th>
-                  {months.map((month) => (
-                    <th key={month.key}>{month.displayName}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {["monthly", "transport"].map((paymentType) => (
-                  <tr key={paymentType}>
-                    <td>{`${
-                      paymentType.charAt(0).toUpperCase() + paymentType.slice(1)
-                    } ${t("real")}`}</td>
-                    {months.map((month) => {
-                      const joinedMonth = months.find(
-                        (m) => m.monthNum === student.joined_month
-                      );
-                      const joinedOrder = joinedMonth
-                        ? joinedMonth.order
-                        : null;
-
-                      const isDisabled =
-                        joinedOrder && month.order < joinedOrder;
-
-                      const key =
-                        paymentType === "monthly"
-                          ? `${month.key}_real`
-                          : `${month.key}_transport_real`;
-
-                      return (
-                        <td
-                          key={key}
-                          className={isDisabled ? t("disabled_cell") : ""}
-                        >
-                          {!isDisabled ? (
-                            <Form.Control
-                              type="number"
-                              min="0"
-                              value={
-                                student.payments.real_payments?.[key] || ""
-                              }
-                              onChange={(e) =>
-                                handlePaymentChange("real", key, e.target.value)
-                              }
-                            />
-                          ) : (
-                            ""
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Agreed Payments */}
-          <h5>{t("agreed_payments")}</h5>
-
-          <Form.Group controlId="autocompleteSwitch" className="mb-3">
-            <Form.Check
-              type="switch"
-              id="autocomplete-switch"
-              label={t("enable_autocomplete")}
-              checked={autocompleteEnabled}
-              onChange={(e) => setAutocompleteEnabled(e.target.checked)}
-            />
-          </Form.Group>
-
-          {autocompleteEnabled && (
-            <Alert variant="info">{t("autocomplete_info")}</Alert>
-          )}
-
-          <div className="table-responsive">
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th>{t("payment_type")}</th>
-                  {months.map((month) => (
-                    <th key={month.key}>{month.displayName}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {["monthly", "transport"].map((paymentType) => (
-                  <tr key={paymentType}>
-                    <td>{`${
-                      paymentType.charAt(0).toUpperCase() + paymentType.slice(1)
-                    } ${t("agreed")}`}</td>
-                    {months.map((month) => {
-                      const joinedMonth = months.find(
-                        (m) => m.monthNum === student.joined_month
-                      );
-                      const joinedOrder = joinedMonth
-                        ? joinedMonth.order
-                        : null;
-
-                      const isDisabled =
-                        joinedOrder && month.order < joinedOrder;
-
-                      const key =
-                        paymentType === "monthly"
-                          ? `${month.key}_agreed`
-                          : `${month.key}_transport_agreed`;
-
-                      return (
-                        <td
-                          key={key}
-                          className={isDisabled ? t("disabled_cell") : ""}
-                        >
-                          {!isDisabled ? (
-                            <Form.Control
-                              type="number"
-                              min="0"
-                              value={
-                                student.payments.agreed_payments?.[key] || "0"
-                              }
-                              onChange={(e) =>
-                                handlePaymentChange(
-                                  "agreed",
-                                  key,
-                                  e.target.value
-                                )
-                              }
-                            />
-                          ) : (
-                            ""
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Insurance Payments */}
-          <h5>{t("insurance_payments")}</h5>
-          <table className="table table-bordered">
-            <thead>
-              <tr>
-                <th>{t("real_insurance")}</th>
-                <th>{t("agreed_insurance")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <Form.Control
-                    type="number"
-                    min="0"
-                    value={
-                      student.payments.real_payments?.insurance_real || "0"
-                    }
-                    onChange={(e) =>
-                      handlePaymentChange(
-                        "real",
-                        "insurance_real",
-                        e.target.value
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  <Form.Control
-                    type="number"
-                    min="0"
-                    value={
-                      student.payments.agreed_payments?.insurance_agreed || "0"
-                    }
-                    onChange={(e) =>
-                      handlePaymentChange(
-                        "agreed",
-                        "insurance_agreed",
-                        e.target.value
-                      )
-                    }
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          {/* Observations */}
-          <h5>{t("observations")}</h5>
-          <Form.Control
-            as="textarea"
-            value={student.observations}
-            onChange={(e) =>
-              setStudent((prev) => ({
-                ...prev,
-                observations: e.target.value,
-              }))
-            }
-            rows={3}
-          />
-        </Modal.Body>
-        <Modal.Footer>
-          {originalStudent && (
-            <Button variant="danger" onClick={() => handleDelete(student)}>
-              {t("delete_student")}
-            </Button>
-          )}
-          <Button variant="secondary" onClick={handleClose}>
-            {t("close")}
-          </Button>
-          <Button variant="primary" onClick={handleSave}>
-            {t("save_changes")}
-          </Button>
-        </Modal.Footer>
-      </Form>
-    </Modal>
-  );
-};
-
-// Reusable component for Student Statistics
-const StudentStatistics = ({ left, newCount, unregistered, registered }) => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="student-statistics mb-4">
-      <h5>{t("student_statistics")}</h5>
-      <ul className="list-inline">
-        <li className="list-inline-item">
-          <span className="stat-label">{t("students_left")}</span> {left}
-        </li>
-        <li className="list-inline-item">
-          <span className="stat-label">{t("new_students")}</span> {newCount}
-        </li>
-        <li className="list-inline-item">
-          <span className="stat-label">{t("unregistered_students")}</span>{" "}
-          {unregistered}
-        </li>
-        <li className="list-inline-item">
-          <span className="stat-label">{t("registered_students")}</span>{" "}
-          {registered}
-        </li>
-      </ul>
-    </div>
-  );
-};
-
-// Reusable component for Filters and Search
-const Filters = ({
-  loadingSchoolYears,
-  schoolYearPeriods,
-  selectedSchoolYearPeriod,
-  handleSchoolYearChange,
-  handleOpenNewSchoolYearModal,
-  searchTerm,
-  setSearchTerm,
-  statusFilter,
-  setStatusFilter,
-}) => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="filters-container mb-2">
-      <Row>
-        {/* School Year Selection */}
-        <Form.Group as={Col} md="4" controlId="schoolYearFilter">
-          <Form.Label>
-            <FaFilter className="mr-2" />
-            {t("school_year_period")}
-          </Form.Label>
-          <div className="d-flex align-items-center">
-            {loadingSchoolYears ? (
-              <div className="d-flex align-items-center">
-                <Spinner animation="border" size="sm" className="mr-2" />
-                {t("loading")}
-              </div>
-            ) : schoolYearPeriods.length === 0 ? (
-              <div>{t("no_school_year_periods")}</div>
-            ) : (
-              <Form.Control
-                as="select"
-                value={selectedSchoolYearPeriod}
-                onChange={handleSchoolYearChange}
-              >
-                {schoolYearPeriods.map((sy) => (
-                  <option key={sy._id.$oid} value={sy._id.$oid}>
-                    {sy.name}
-                  </option>
-                ))}
-              </Form.Control>
-            )}
-            {/* Plus Icon Button */}
-            <Button
-              variant="success"
-              className="ml-2"
-              onClick={handleOpenNewSchoolYearModal}
-              title={t("add_new_school_year_period")}
-            >
-              <FaPlus />
-            </Button>
-          </div>
-        </Form.Group>
-
-        {/* Search Input Field */}
-        <Form.Group as={Col} md="4" controlId="searchStudent">
-          <Form.Label>
-            <FaSearch className="mr-2" />
-            {t("search_by_name")}
-          </Form.Label>
-          <InputGroup>
-            <InputGroup.Text id="search-icon">
-              <FaSearch />
-            </InputGroup.Text>
-            <Form.Control
-              type="text"
-              placeholder={t("enter_student_name")}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </InputGroup>
-        </Form.Group>
-
-        {/* Status Filter */}
-        <Form.Group as={Col} md="4" controlId="statusFilter">
-          <Form.Label>
-            <FaFilter className="mr-2" />
-            {t("filter_by_status")}
-          </Form.Label>
-          <InputGroup>
-            <InputGroup.Text id="filter-icon">
-              <FaFilter />
-            </InputGroup.Text>
-            <Form.Control
-              as="select"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="active">{t("active")}</option>
-              <option value="left">{t("left")}</option>
-              <option value="new">{t("new")}</option>
-              <option value="all">{t("all")}</option>
-            </Form.Control>
-          </InputGroup>
-        </Form.Group>
-      </Row>
-    </div>
-  );
-};
-
-// Reusable component for Student Table
-const StudentTable = ({
-  students,
-  months,
-  handleRowClick,
-  filteredStudents,
-  loadingStudents,
-  error,
-}) => {
-  const { t } = useTranslation();
-
-  const getCellClass = (real, agreed) => {
-    const realNum = Number(real);
-    const agreedNum = Number(agreed);
-
-    if (realNum === 0) return "highlight-red";
-    if (realNum >= agreedNum) return "highlight-green";
-
-    return "highlight-yellow";
-  };
-
-  const displayValue = (value) => {
-    return Number(value) === 0 ? "" : value;
-  };
-
-  return (
-    <>
-      {loadingStudents ? (
-        <div className="d-flex align-items-center">
-          <Spinner animation="border" className="mr-2" />{" "}
-          {t("loading_students")}
-        </div>
-      ) : students.length === 0 ? (
-        <div>{t("no_students_found")}</div>
-      ) : (
-        <div className="table-responsive">
-          <table className="table table-bordered students-table">
-            <thead>
-              <tr>
-                <th>{t("full_name")}</th>
-                <th>{t("real_insurance")}</th>
-                {months.map((month) => (
-                  <th key={month.key}>{month.displayName}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredStudents.length === 0 ? (
-                <tr>
-                  <td colSpan={12} className="text-center">
-                    {t("no_students_found")}
-                  </td>
-                </tr>
-              ) : (
-                filteredStudents.map((student) => {
-                  const hasTransport = Object.keys(
-                    student.payments.agreed_payments
-                  ).some(
-                    (key) =>
-                      key.includes("transport_agreed") &&
-                      Number(student.payments.agreed_payments[key]) > 0
-                  );
-
-                  const rowSpan = hasTransport ? 2 : 1;
-
-                  return (
-                    <React.Fragment key={student._id}>
-                      <tr
-                        onClick={() => handleRowClick(student)}
-                        className="clickable-row"
-                      >
-                        <td rowSpan={rowSpan}>{student.name}</td>
-
-                        {/* Modified Real Insurance Cell with Coloring */}
-                        <td
-                          rowSpan={rowSpan}
-                          className={getCellClass(
-                            student.payments.real_payments.insurance_real,
-                            student.payments.agreed_payments.insurance_agreed
-                          )}
-                        >
-                          {student.payments.real_payments.insurance_real}
-                        </td>
-
-                        {months.map((month) => {
-                          const joinedMonth = months.find(
-                            (m) => m.monthNum === student.joined_month
-                          );
-                          const joinedOrder = joinedMonth
-                            ? joinedMonth.order
-                            : null;
-
-                          const isDisabled =
-                            joinedOrder && month.order < joinedOrder;
-
-                          return (
-                            <td
-                              key={month.key}
-                              className={
-                                isDisabled
-                                  ? t("disabled_cell")
-                                  : getCellClass(
-                                      student.payments.real_payments[
-                                        `${month.key}_real`
-                                      ],
-                                      student.payments.agreed_payments[
-                                        `${month.key}_agreed`
-                                      ]
-                                    )
-                              }
-                            >
-                              {isDisabled
-                                ? ""
-                                : displayValue(
-                                    student.payments.real_payments[
-                                      `${month.key}_real`
-                                    ]
-                                  )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                      {hasTransport && (
-                        <tr className="transport-row">
-                          {months.map((month) => {
-                            const joinedMonth = months.find(
-                              (m) => m.monthNum === student.joined_month
-                            );
-                            const joinedOrder = joinedMonth
-                              ? joinedMonth.order
-                              : null;
-
-                            const isDisabled =
-                              joinedOrder && month.order < joinedOrder;
-
-                            return (
-                              <td
-                                key={month.key}
-                                className={
-                                  isDisabled
-                                    ? t("disabled_cell")
-                                    : getCellClass(
-                                        student.payments.real_payments[
-                                          `${month.key}_transport_real`
-                                        ],
-                                        student.payments.agreed_payments[
-                                          `${month.key}_transport_agreed`
-                                        ]
-                                      )
-                                }
-                              >
-                                {isDisabled
-                                  ? ""
-                                  : displayValue(
-                                      student.payments.real_payments[
-                                        `${month.key}_transport_real`
-                                      ]
-                                    )}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </>
-  );
-};
 
 function Home() {
   const { t, i18n } = useTranslation();
@@ -891,6 +60,9 @@ function Home() {
 
   const [schoolYearPeriods, setSchoolYearPeriods] = useState([]);
   const [selectedSchoolYearPeriod, setSelectedSchoolYearPeriod] = useState("");
+
+  // New state for saving
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchSchoolYearPeriods = async () => {
@@ -1077,7 +249,8 @@ function Home() {
       return;
     }
 
-    // Validation and business rules can be handled here or within the StudentModal component
+    // Start saving
+    setIsSaving(true);
 
     try {
       if (!originalStudentData) {
@@ -1196,6 +369,9 @@ function Home() {
       } else {
         setError(t("failed_to_save_changes"));
       }
+    } finally {
+      // End saving
+      setIsSaving(false);
     }
   };
 
@@ -1212,6 +388,7 @@ function Home() {
         m4_agreed: "0",
         m5_agreed: "0",
         m6_agreed: "0",
+
         m9_transport_agreed: "0",
         m10_transport_agreed: "0",
         m11_transport_agreed: "0",
@@ -1222,6 +399,7 @@ function Home() {
         m4_transport_agreed: "0",
         m5_transport_agreed: "0",
         m6_transport_agreed: "0",
+
         insurance_agreed: "0",
       },
       real_payments: {
@@ -1235,6 +413,7 @@ function Home() {
         m4_real: 0,
         m5_real: 0,
         m6_real: 0,
+
         m9_transport_real: 0,
         m10_transport_real: 0,
         m11_transport_real: 0,
@@ -1245,6 +424,7 @@ function Home() {
         m4_transport_real: 0,
         m5_transport_real: 0,
         m6_transport_real: 0,
+
         insurance_real: 0,
       },
     };
@@ -1313,6 +493,76 @@ function Home() {
     });
   }, [students, searchTerm, statusFilter]);
 
+  // Inline Edit Handler
+  const handleInlineEdit = async (studentId, key, value) => {
+    const updatedStudents = students.map((student) => {
+      if (student._id === studentId) {
+        const updatedPayments = { ...student.payments.real_payments };
+        updatedPayments[key] = Number(value) || 0;
+        return {
+          ...student,
+          payments: {
+            ...student.payments,
+            real_payments: updatedPayments,
+          },
+        };
+      }
+      return student;
+    });
+
+    setStudents(updatedStudents);
+
+    try {
+      // Determine payment type and month
+      if (key.endsWith("insurance_real")) {
+        // Insurance payment
+        const payment_type = "insurance";
+        const paymentObj = {
+          student_id: studentId,
+          user_id: currentUserId,
+          amount: Number(value) || 0,
+          payment_type: payment_type,
+          // No month for insurance
+        };
+
+        await api.post("/payments/create_or_update", paymentObj);
+      } else if (key.endsWith("transport_real")) {
+        // Transport payment
+        const payment_type = "transport";
+        const monthKey = key.split("_")[0]; // e.g., 'm9'
+        const monthNum = parseInt(monthKey.substring(1)); // e.g., 9
+
+        const paymentObj = {
+          student_id: studentId,
+          user_id: currentUserId,
+          amount: Number(value) || 0,
+          payment_type: payment_type,
+          month: monthNum,
+        };
+
+        await api.post("/payments/create_or_update", paymentObj);
+      } else if (key.endsWith("real")) {
+        // Monthly payment
+        const payment_type = "monthly";
+        const monthKey = key.split("_")[0]; // e.g., 'm9'
+        const monthNum = parseInt(monthKey.substring(1)); // e.g., 9
+
+        const paymentObj = {
+          student_id: studentId,
+          user_id: currentUserId,
+          amount: Number(value) || 0,
+          payment_type: payment_type,
+          month: monthNum,
+        };
+
+        await api.post("/payments/create_or_update", paymentObj);
+      }
+    } catch (err) {
+      console.error("Error updating payment:", err);
+      setError(t("failed_to_update_payment"));
+    }
+  };
+
   return (
     <div className="container mt-4">
       <h1 className="mb-4">{t("student_data")}</h1>
@@ -1348,7 +598,7 @@ function Home() {
         variant="primary"
         className="mb-4"
         onClick={handleAddNewStudent}
-        disabled={!selectedSchoolYearPeriod}
+        disabled={!selectedSchoolYearPeriod || isSaving} // Disable if no school year or saving
       >
         <FaPlus className="mr-2" />
         {t("add_new_student")}
@@ -1362,6 +612,7 @@ function Home() {
         filteredStudents={filteredStudents}
         loadingStudents={loadingStudents}
         error={error}
+        handleInlineEdit={handleInlineEdit}
       />
 
       {/* New School Year Period Modal */}
@@ -1396,6 +647,7 @@ function Home() {
           setAutocompleteEnabled={setAutocompleteEnabled}
           error={error}
           setError={setError}
+          isSaving={isSaving}
         />
       )}
     </div>
