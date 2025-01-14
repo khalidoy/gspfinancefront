@@ -26,14 +26,13 @@ const monthsList = [
   { id: 4, name: "April" },
   { id: 5, name: "May" },
   { id: 6, name: "June" },
-  { id: 7, name: "July" },
-  { id: 8, name: "August" },
 ];
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL + "/depences"; // Backend API URL
 
 function MonthlyExpenses() {
   const { t } = useTranslation();
+  const [schoolyearId, setSchoolyearId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [fixedExpenses, setFixedExpenses] = useState({});
@@ -53,28 +52,59 @@ function MonthlyExpenses() {
     setEditingIndex(index); // Set the index of the expense being edited
   };
 
-  // Fetch existing expenses when the component mounts
+  // Fetch the current schoolyear_id when the component mounts
+  useEffect(() => {
+    const fetchCurrentSchoolYear = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/current_schoolyear`);
+        if (response.data.status === "success") {
+          setSchoolyearId(response.data.schoolyear_id);
+        } else {
+          setError(t("failed_to_fetch_current_schoolyear"));
+        }
+      } catch (err) {
+        console.error("Error fetching current schoolyear:", err);
+        setError(t("failed_to_fetch_current_schoolyear"));
+      }
+    };
+    fetchCurrentSchoolYear();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fetch existing expenses when schoolyearId is available
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/monthly`);
+        const response = await axios.get(`${API_BASE_URL}/monthly`, {
+          params: { schoolyear_id: schoolyearId }, // Include schoolyear_id
+        });
+        console.log("API Response:", response.data); // Debugging
         if (response.data.status === "success") {
           // Map response to fixedExpenses with month as key
           const data = response.data.data.reduce((acc, expense) => {
-            const month = new Date(expense.date).getMonth() + 1; // Get month from date
+            // Extract the date string from the nested $date object
+            const dateString = expense.date?.$date || expense.date;
+            const dateObj = new Date(dateString);
+            const month = dateObj.getMonth() + 1; // Get month from date
             acc[month] = expense.fixed_expenses || [];
             return acc;
           }, {});
+          console.log("Mapped fixedExpenses:", data); // Debugging
           setFixedExpenses(data);
+        } else {
+          setError(t("failed_to_fetch_existing_expenses"));
         }
       } catch (error) {
         console.error("Error fetching data: ", error);
         setError(t("failed_to_fetch_existing_expenses"));
       }
     };
-    fetchData();
+    if (schoolyearId) {
+      // Ensure schoolyearId is available
+      fetchData();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [schoolyearId]);
 
   // Function to handle opening the modal for a selected month
   const handleOpenModal = (monthId) => {
@@ -157,7 +187,9 @@ function MonthlyExpenses() {
       );
 
       const data = {
-        description: `Expenses for month ${selectedMonth}`,
+        description: `Expenses for month ${
+          monthsList.find((m) => m.id === selectedMonth)?.name
+        }`,
         fixed_expenses: expensesForMonth,
         amount: totalAmount,
       };
@@ -165,26 +197,58 @@ function MonthlyExpenses() {
       // Send the POST request to save the expenses
       const response = await axios.post(
         `${API_BASE_URL}/monthly/${selectedMonth}`,
-        data
+        data,
+        { params: { schoolyear_id: schoolyearId } } // Include schoolyear_id as query param
       );
 
       if (response.status === 200 || response.status === 201) {
         setSuccess(t("expenses_saved_successfully"));
+        setError("");
+        handleCloseModal();
+
+        // Refetch the expenses to include the newly saved data
+        const updatedResponse = await axios.get(`${API_BASE_URL}/monthly`, {
+          params: { schoolyear_id: schoolyearId }, // Include schoolyear_id
+        });
+        if (updatedResponse.data.status === "success") {
+          const updatedData = updatedResponse.data.data.reduce(
+            (acc, expense) => {
+              const dateString = expense.date?.$date || expense.date;
+              const dateObj = new Date(dateString);
+              const month = dateObj.getMonth() + 1;
+              acc[month] = expense.fixed_expenses || [];
+              return acc;
+            },
+            {}
+          );
+          setFixedExpenses(updatedData);
+          console.log("Updated fixedExpenses after save:", updatedData); // Debugging
+        }
       } else {
         setError(t("failed_to_save_expenses"));
+        setSuccess("");
       }
     } catch (err) {
       console.error("Error saving expenses:", err);
       setError(t("failed_to_save_expenses"));
+      setSuccess("");
     }
   };
 
   // Function to populate default monthly expenses
   const handlePopulateDefaults = async () => {
     try {
+      if (!schoolyearId) {
+        setPopulateError(t("schoolyear_id_missing"));
+        return;
+      }
+
       const response = await axios.post(
-        `${API_BASE_URL}/monthly/populate_defaults`
+        `${API_BASE_URL}/monthly/populate_defaults`,
+        null, // No body needed if sending as query param
+        { params: { schoolyear_id: schoolyearId } } // Add schoolyear_id as query param
       );
+      console.log("Populate Defaults Response:", response.data); // Debugging
       if (response.data.status === "success") {
         setPopulateSuccess(
           response.data.message || t("expenses_saved_successfully")
@@ -193,14 +257,22 @@ function MonthlyExpenses() {
         // Refetch the expenses after populating defaults
         const fetchData = async () => {
           try {
-            const res = await axios.get(`${API_BASE_URL}/monthly`);
+            const res = await axios.get(`${API_BASE_URL}/monthly`, {
+              params: { schoolyear_id: schoolyearId }, // Include schoolyear_id
+            });
             if (res.data.status === "success") {
-              const data = res.data.data.reduce((acc, expense) => {
-                const month = new Date(expense.date).getMonth() + 1;
+              const updatedData = res.data.data.reduce((acc, expense) => {
+                const dateString = expense.date?.$date || expense.date;
+                const dateObj = new Date(dateString);
+                const month = dateObj.getMonth() + 1;
                 acc[month] = expense.fixed_expenses || [];
                 return acc;
               }, {});
-              setFixedExpenses(data);
+              setFixedExpenses(updatedData);
+              console.log(
+                "FixedExpenses after populating defaults:",
+                updatedData
+              ); // Debugging
             }
           } catch (error) {
             console.error("Error fetching data: ", error);
@@ -258,6 +330,7 @@ function MonthlyExpenses() {
         variant="warning"
         className="mb-4"
         onClick={handlePopulateDefaults}
+        disabled={!schoolyearId}
       >
         {t("populate_default_expenses")}
       </Button>
