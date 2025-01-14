@@ -89,9 +89,9 @@ function CustomNavbar() {
               className="nav-item"
               menuVariant="dark"
             >
-              <NavDropdown.Item as={Link} to="/reports/normal-payments">
+              {/* <NavDropdown.Item as={Link} to="/reports/normal-payments">
                 {t("normal_payments")}
-              </NavDropdown.Item>
+              </NavDropdown.Item> */}
               <NavDropdown.Item as={Link} to="/reports/credit-report">
                 {t("credit_report")}
               </NavDropdown.Item>

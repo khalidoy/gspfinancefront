@@ -227,6 +227,10 @@
   "students_with_agreed_payment_text": "Étudiants avec Paiement Convenu ",
   "payment_distribution_for": "Distribution des Paiements pour le mois",
   "transport_report_title": "Rapport de Transport",
-
-  "failed_to_fetch_transport_report": "Échec de la récupération du rapport de transport."
+  "failed_to_fetch_transport_report": "Échec de la récupération du rapport de transport.",
+  "total_payee_restant": "Total Payé et Restant",
+  "depence": "Dépenses",
+  "current_net_profit": "Profit Net Actuel",
+  "part_au_tant_que_associe": "Part en tant qu'Associé",
+  "current_part_au_tant_que_associe": "Part Actuelle en tant qu'Associé"
 }

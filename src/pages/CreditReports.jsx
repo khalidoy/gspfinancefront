@@ -158,36 +158,71 @@ function CreditReports() {
                 <th>{t("month")}</th>
                 <th>{t("total_paid")}</th>
                 <th>{t("total_left")}</th>
+                <th>{t("total_payee_restant")}</th>
+                <th>{t("depence")}</th>
+                <th>{t("net_profit")}</th>
+                <th className="highlight-column-7">
+                  {t("current_net_profit")}
+                </th>
+                <th>{t("part_au_tant_que_associe")}</th>
+                <th className="highlight-column-9">
+                  {t("current_part_au_tant_que_associe")}
+                </th>
                 <th>{t("unpaid_students")}</th>
               </tr>
             </thead>
             <tbody>
-              {reportData.map((row) => (
-                <tr key={row.month}>
-                  <td>{monthNames[row.month]}</td>
-                  <td>{(row.total_paid || 0).toFixed(2)}</td>
-                  <td>{(row.total_left || 0).toFixed(2)}</td>
-                  <td>
-                    {row.unpaid_students && row.unpaid_students.length > 0 ? (
-                      <Button
-                        variant="link"
-                        onClick={() =>
-                          handleShowModal(
-                            `${t("unpaid_students_title")}${
-                              monthNames[row.month]
-                            }`,
-                            row.unpaid_students
-                          )
-                        }
-                      >
-                        {t("show_unpaid_students")}
-                      </Button>
-                    ) : (
-                      t("none")
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {reportData.map((row) => {
+                const {
+                  month,
+                  total_paid,
+                  total_left,
+                  depence,
+                  net_profit,
+                  current_net_profit,
+                  part_au_tant_que_associe,
+                  current_part_au_tant_que_associe,
+                } = row;
+
+                const total_payee_restant = total_paid + total_left;
+
+                return (
+                  <tr key={month}>
+                    <td>{monthNames[month]}</td>
+                    <td>{(total_paid || 0).toFixed(2)}</td>
+                    <td>{(total_left || 0).toFixed(2)}</td>
+                    <td>{total_payee_restant.toFixed(2)}</td>
+                    <td>{depence.toFixed(2)}</td>
+                    <td>{net_profit.toFixed(2)}</td>
+                    <td className="highlight-column-7">
+                      {current_net_profit.toFixed(2)}
+                    </td>
+                    <td>{part_au_tant_que_associe.toFixed(2)}</td>
+                    <td className="highlight-column-9">
+                      {current_part_au_tant_que_associe.toFixed(2)}
+                    </td>
+                    <td>
+                      {row.unpaid_students && row.unpaid_students.length > 0 ? (
+                        <Button
+                          variant="link"
+                          onClick={() =>
+                            handleShowModal(
+                              `${t("unpaid_students_title")}${
+                                monthNames[month]
+                              }`,
+                              row.unpaid_students
+                            )
+                          }
+                        >
+                          {t("show_unpaid_students")}
+                        </Button>
+                      ) : (
+                        t("none")
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </Table>
 

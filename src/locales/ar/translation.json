@@ -228,5 +228,10 @@
   "students_with_agreed_payment_text": "طلاب بدفع متفق عليه ",
   "payment_distribution_for": "توزيع المدفوعات لشهر",
   "transport_report_title": "تقرير النقل",
-  "failed_to_fetch_transport_report": "فشل في جلب تقرير النقل."
+  "failed_to_fetch_transport_report": "فشل في جلب تقرير النقل.",
+  "total_payee_restant": "مجموع المدفوع والمتبقي",
+  "depence": "المصاريف",
+  "current_net_profit": "صافي الربح الحالي",
+  "part_au_tant_que_associe": "حصة الشريك",
+  "current_part_au_tant_que_associe": "الحصة الحالية للشريك"
 }
