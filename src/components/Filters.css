@@ -1,0 +1,303 @@
+/* --- Enhanced Filters CSS --- */
+
+.filter-card {
+  border: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  transition: none;
+  /* Remove transitions */
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(7px) saturate(120%);
+  margin-bottom: 1rem;
+}
+
+.filter-card:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  /* Same as non-hover */
+  transform: none;
+  /* Remove transform effect */
+}
+
+.filter-card-header {
+  background: linear-gradient(90deg, #c5e5ff 0%, #e0eaff 50%, #ffffff 100%);
+  color: #222;
+  font-weight: 700;
+  font-size: 1.3rem;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.02em;
+  border-bottom: 1.5px solid #e3e9f7;
+  box-shadow: 0 2px 8px rgba(197, 229, 255, 0.08);
+}
+
+.filter-icon {
+  margin-right: 10px;
+  font-size: 2em;
+  color: #3498db;
+  filter: drop-shadow(0 2px 4px #c5e5ff88);
+}
+
+.filter-group {
+  background: linear-gradient(120deg, #ffffff 60%, #e3f0ff 100%);
+  border-radius: 10px;
+  padding: 16px 10px;
+  margin: 12px 0;
+  min-height: 120px;
+  transition: none;
+  /* Remove transitions */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  position: relative;
+}
+
+.filter-group:hover {
+  transform: none;
+  /* Remove transform effect */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  /* Same as non-hover */
+  z-index: inherit;
+}
+
+.student-filter {
+  border-left: 5px solid #3498db;
+  background: linear-gradient(100deg, #eaf6ff 80%, #d0eaff 100%);
+}
+
+.class-filter {
+  border-left: 5px solid #2ecc71;
+  background: linear-gradient(100deg, #eafff3 80%, #d0ffe6 100%);
+}
+
+.financial-filter {
+  border-left: 5px solid #f39c12;
+  background: linear-gradient(100deg, #fff7e6 80%, #ffe9c7 100%);
+}
+
+.filter-group-title {
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  border-radius: 24px;
+  letter-spacing: 0.01em;
+  background: rgba(245, 247, 255, 0.7);
+  padding: 6px 12px;
+  box-shadow: 0 1px 4px rgba(197, 229, 255, 0.07);
+}
+
+.group-icon {
+  color: #3498db;
+  margin-right: 8px;
+  font-size: 2em;
+  filter: drop-shadow(0 1px 2px #c5e5ff55);
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #444;
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
+  transition: color 0.18s;
+}
+
+.filter-label:hover {
+  color: inherit;
+  /* Remove hover color change */
+}
+
+.label-icon {
+  margin-right: 5px;
+  color: #666;
+  font-size: 1.5em;
+}
+
+.loading-container {
+  background: linear-gradient(90deg, #f8f9fa 80%, #e3f0ff 100%);
+  padding: 6px 10px;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 0.92rem;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.school-year-select,
+.status-select,
+.class-select,
+.month-select {
+  border-radius: 5px;
+  border: 1.5px solid #d2e3f7;
+  padding: 6px 32px 6px 10px;
+  box-shadow: 0 1px 4px rgba(52, 152, 219, 0.04);
+  transition: none;
+  /* Remove transitions */
+  background: linear-gradient(90deg, #fafdff 80%, #e3f0ff 100%),
+    url("data:image/svg+xml;utf8,<svg fill='gray' height='28' viewBox='0 0 20 20' width='28' xmlns='http://www.w3.org/2000/svg'><path d='M5.516 7.548a1 1 0 0 1 1.415-.032L10 10.414l3.07-2.898a1 1 0 1 1 1.384 1.447l-3.762 3.55a1 1 0 0 1-1.384 0l-3.762-3.55a1 1 0 0 1-.032-1.415z'/></svg>")
+      no-repeat right 10px center/28px 28px;
+  appearance: none;
+  -webkit-appearance: none;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+  cursor: pointer;
+  outline: none;
+  color: #222;
+  min-width: 120px;
+  position: relative;
+}
+
+/* Remove hover effects for select elements */
+
+.school-year-select:hover,
+.status-select:hover,
+.class-select:hover,
+.month-select:hover {
+  border-color: #d2e3f7;
+  /* Same as non-hover */
+  box-shadow: 0 1px 4px rgba(52, 152, 219, 0.04);
+  /* Same as non-hover */
+  background: inherit;
+}
+
+.school-year-select:focus,
+.status-select:focus,
+.class-select:focus,
+.month-select:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.18);
+  background: linear-gradient(90deg, #e3f0ff 80%, #fafdff 100%),
+    url("data:image/svg+xml;utf8,<svg fill='%233498db' height='28' viewBox='0 0 20 20' width='28' xmlns='http://www.w3.org/2000/svg'><path d='M5.516 7.548a1 1 0 0 1 1.415-.032L10 10.414l3.07-2.898a1 1 0 1 1 1.384 1.447l-3.762 3.55a1 1 0 0 1-1.384 0l-3.762-3.55a1 1 0 0 1-.032-1.415z'/></svg>")
+      no-repeat right 10px center/28px 28px;
+}
+
+.school-year-select option,
+.status-select option,
+.class-select option,
+.month-select option {
+  background: #fff;
+  color: #222;
+  font-size: 0.95rem;
+  border-radius: 0;
+  padding: 6px 10px;
+}
+
+/* For Firefox: remove default arrow */
+
+.school-year-select::-ms-expand,
+.status-select::-ms-expand,
+.class-select::-ms-expand,
+.month-select::-ms-expand {
+  display: none;
+}
+
+/* Remove hover effects for inputs */
+
+input[type="text"]:hover,
+select:hover {
+  border-color: inherit;
+  box-shadow: none;
+}
+
+/* Animation for form elements */
+
+.form-control,
+.form-select {
+  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Media queries for responsive design */
+
+@media (max-width: 1200px) {
+  .filter-card {
+    max-width: 99vw;
+  }
+  .filter-group {
+    padding: 12px 6px;
+  }
+}
+
+@media (max-width: 992px) {
+  .filter-group {
+    margin-bottom: 8px;
+    padding: 10px 4px;
+  }
+  .filter-card-header {
+    font-size: 1.1rem;
+    padding: 10px 4px;
+  }
+}
+
+@media (max-width: 768px) {
+  .primary-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-card {
+    margin: 0.5rem 0;
+    border-radius: 8px;
+  }
+  .filter-group {
+    min-height: unset;
+    padding: 8px 2px;
+  }
+}
+
+@media (max-width: 576px) {
+  .filter-card-header {
+    font-size: 0.95rem;
+    padding: 6px 2px;
+  }
+  .filter-group-title {
+    font-size: 0.85rem;
+    padding: 4px 6px;
+  }
+}
+
+.medium-width-card {
+  max-width: 99vw;
+  min-width: 100%;
+  margin: 1.2rem auto;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 24px rgba(52, 152, 219, 0.07);
+}
+
+/* Subtle scrollbar styling for filter panels */
+
+.filter-group,
+.filter-card {
+  scrollbar-width: thin;
+  scrollbar-color: #c5e5ff #f5faff;
+}
+
+.filter-group::-webkit-scrollbar,
+.filter-card::-webkit-scrollbar {
+  width: 8px;
+  background: #f5faff;
+}
+
+.filter-group::-webkit-scrollbar-thumb,
+.filter-card::-webkit-scrollbar-thumb {
+  background: #c5e5ff;
+  border-radius: 8px;
+}
+
+/* --- End Enhanced Filters CSS --- */
