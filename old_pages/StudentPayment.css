@@ -1,0 +1,92 @@
+/* src/StudentPayment.css */
+
+.student-payment-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #f2f2f2;
+}
+
+.student-payment-card {
+  border: none;
+  border-radius: 15px;
+  background-color: #ffffff;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Added styles for the university logo */
+
+.university-logo {
+  height: 50px;
+  /* Adjust the height as needed */
+  width: auto;
+}
+
+/* Positioning the language dropdown within the card header */
+
+.language-dropdown {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.language-icon {
+  font-size: 1.5rem;
+  color: #007bff;
+  cursor: pointer;
+}
+
+.student-name {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.student-info {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.student-detail {
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+.payment-header {
+  font-size: 1.8rem;
+  margin-top: 2rem;
+  text-align: center;
+  color: #444;
+  border-top: 2px solid #eee;
+  padding-top: 1rem;
+}
+
+.payment-table {
+  margin-top: 1rem;
+}
+
+.payment-table th,
+.payment-table td {
+  text-align: center;
+  vertical-align: middle;
+  font-size: 1rem;
+}
+
+.loading-wrapper {
+  text-align: center;
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .student-name {
+    font-size: 2rem;
+  }
+  .student-payment-container {
+    padding: 1rem;
+  }
+}

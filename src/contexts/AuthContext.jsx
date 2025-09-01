@@ -52,32 +52,41 @@ export const AuthProvider = ({ children }) => {
   }, [currentUser, loading]);
 
   // Login function
-  const login = useCallback(async (username, password) => {
-    // Clear any previous state completely before setting new state
+  const login = useCallback(async (userInput, password) => {
     setCurrentUser(null);
     setError(null);
 
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/auth/login`,
-        { username, password },
-        { withCredentials: true }
-      );
-
-      if (response.data.status === "success") {
-        const userData = response.data.user;
-        setCurrentUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-        return { success: true };
-      } else {
-        setError(response.data.message || "Login failed");
-        return { success: false, error: response.data.message };
+    // Try both username and email fields for compatibility
+    const payloads = [
+      { username: userInput, password },
+      { email: userInput, password },
+    ];
+    for (const payload of payloads) {
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_BACKEND_URL}/auth/login`,
+          payload,
+          { withCredentials: true }
+        );
+        if (response.data.status === "success") {
+          const userData = response.data.user;
+          setCurrentUser(userData);
+          localStorage.setItem("user", JSON.stringify(userData));
+          return { success: true };
+        } else {
+          // If backend returns a message, try next payload
+          continue;
+        }
+      } catch (err) {
+        // Try next payload if 401 or similar
+        continue;
       }
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || "Login failed";
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
     }
+    setError("Login failed: invalid username/email or password");
+    return {
+      success: false,
+      error: "Login failed: invalid username/email or password",
+    };
   }, []);
 
   // Logout function
@@ -98,12 +107,12 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Register function
-  const register = async (username, password) => {
+  const register = async (username, email, password) => {
     try {
       setError(null);
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/auth/register`,
-        { username, password }
+        { username, email, password }
       );
 
       if (response.data.status === "success") {

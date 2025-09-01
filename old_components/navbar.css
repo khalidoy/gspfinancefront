@@ -1,0 +1,114 @@
+/* Navbar customization */
+
+.custom-navbar {
+    background-color: #a4cfab66;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    height: 150px;
+    /* Fixed navbar height */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    /* For absolute positioning of the logo */
+    overflow: visible;
+    /* Allow the logo to extend beyond the navbar boundaries */
+}
+
+
+/* Title customization */
+
+.app-title {
+    font-size: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+
+
+/* Logo styling */
+
+.navbar-logo {
+    height: 270px;
+    /* Larger logo size */
+    position: absolute;
+    /* Remove from flex flow */
+    left: 50px;
+    /* Adjust horizontal positioning as needed */
+    top: 60%;
+    transform: translateY(-50%);
+    object-fit: contain;
+}
+
+
+/* Brand text styling */
+
+.brand-text {
+    color: white;
+}
+
+
+/* Brand subtext styling */
+
+.brand-subtext {
+    margin-top: -5px;
+    font-size: 14px;
+    color: #ffc107;
+}
+
+
+/* Menu items */
+
+.nav-item {
+    color: rgb(58, 58, 58) !important;
+    margin-left: 15px !important;
+    font-size: 16px !important;
+    display: flex;
+    align-items: center;
+}
+
+
+/* Fix the grey color of dropdown toggle */
+
+.navbar .dropdown-toggle {
+    color: rgb(0, 0, 0) !important;
+}
+
+.navbar .dropdown-toggle:hover {
+    color: #ffc107 !important;
+}
+
+
+/* Dropdown menu background color */
+
+#expenses-nav-dropdown .dropdown-menu {
+    background-color: #3cb371 !important;
+}
+
+
+/* Dropdown items */
+
+#expenses-nav-dropdown .dropdown-item {
+    color: white !important;
+}
+
+#expenses-nav-dropdown .dropdown-item:hover {
+    background-color: #2e8b57 !important;
+    color: white !important;
+}
+
+
+/* Hover effect for nav items */
+
+.nav-item:hover {
+    color: #ffc107 !important;
+}
+
+
+/* Responsive styling */
+
+@media (max-width: 768px) {
+    .nav-item {
+        font-size: 14px !important;
+    }
+}

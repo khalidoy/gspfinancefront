@@ -1,173 +1,229 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import {
   Box,
-  Container,
+  Heading,
   VStack,
-  FormControl,
-  FormLabel,
   Input,
   Button,
-  Alert,
-  AlertIcon,
-  AlertDescription,
-  Spinner,
-  Card,
-  CardBody,
-  Heading,
   Text,
-  useColorModeValue,
   Flex,
+  CheckboxRoot,
+  CheckboxControl,
+  CheckboxLabel,
+  IconButton,
+  Container,
+  Center,
+  Icon,
   Link as ChakraLink,
-  CloseButton,
 } from "@chakra-ui/react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { FaEye, FaEyeSlash, FaUserPlus } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
-import { AuthContext } from "../contexts/AuthContext";
+import axios from "axios";
 
-function Login() {
+// Configure axios with base URL
+const api = axios.create({
+  baseURL: process.env.REACT_APP_BACKEND_URL || "http://localhost:5000",
+});
+
+function Login({ onLoginSuccess }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { login, error: authError } = useContext(AuthContext);
-
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    remember_me: false,
+  });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Get the return URL from location state or default to dashboard
-  const from = location.state?.from?.pathname || "/";
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+    // Clear error when user starts typing
+    if (error) setError("");
+  };
 
-  // Check for success message from registration
-  const successMessage = location.state?.message;
-  const messageType = location.state?.type || "danger";
-  const [showSuccessMessage, setShowSuccessMessage] = useState(
-    !!successMessage
-  );
-
-  const cardBg = useColorModeValue("white", "gray.700");
-  const textColor = useColorModeValue("gray.600", "gray.200");
-
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!username.trim() || !password) {
-      setError(t("username_password_required"));
-      return;
-    }
+    setLoading(true);
+    setError("");
 
     try {
-      setLoading(true);
-      setError("");
-
-      const result = await login(username, password);
-
-      if (result.success) {
-        navigate(from, { replace: true });
-      } else {
-        setError(result.error || t("login_failed"));
+      // Validate form
+      if (!formData.username.trim() || !formData.password) {
+        setError("Please enter both username and password");
+        setLoading(false);
+        return;
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      setError(t("login_failed"));
+
+      const response = await api.post("/auth/login", formData);
+
+      if (response.data && response.data.user) {
+        // Store user data in localStorage
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        localStorage.setItem("isAuthenticated", "true");
+
+        // Call success callback
+        if (onLoginSuccess) {
+          onLoginSuccess(response.data.user);
+        }
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      if (err.response && err.response.data && err.response.data.error) {
+        setError(err.response.data.error);
+      } else {
+        setError("Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container maxW="md" centerContent py={12}>
-      <Box w="100%">
-        <Card bg={cardBg} shadow="lg" borderRadius="lg" p={8}>
-          <CardBody>
-            <VStack spacing={6}>
-              <Box textAlign="center">
-                <Heading size="lg" mb={2}>
-                  {t("login")}
-                </Heading>
-                <Text color={textColor}>{t("login_subtitle")}</Text>
-              </Box>
+    <Container maxW="container.sm" h="100vh">
+      <Center h="100%">
+        <Box
+          w="100%"
+          maxW="400px"
+          bg="white"
+          shadow="xl"
+          borderRadius="lg"
+          p={8}
+        >
+          <VStack gap={6}>
+            <Heading size="lg" color="blue.600" textAlign="center">
+              {t("login.title", "GSP Finance")}
+            </Heading>
 
-              {showSuccessMessage && (
-                <Alert
-                  status={messageType === "danger" ? "error" : "success"}
-                  borderRadius="md"
-                >
-                  <AlertIcon />
-                  <AlertDescription flex="1">{successMessage}</AlertDescription>
-                  <CloseButton
-                    onClick={() => {
-                      setShowSuccessMessage(false);
-                      navigate(location.pathname, { replace: true });
-                    }}
-                  />
-                </Alert>
-              )}
+            <Text fontSize="sm" color="gray.600" textAlign="center">
+              {t("login.subtitle", "Sign in to your account")}
+            </Text>
 
-              {(error || authError) && (
-                <Alert status="error" borderRadius="md">
-                  <AlertIcon />
-                  <AlertDescription>{error || authError}</AlertDescription>
-                </Alert>
-              )}
+            <Box w="100%">
+              <form onSubmit={handleSubmit}>
+                <VStack gap={4}>
+                  {error && (
+                    <Box
+                      bg="red.50"
+                      border="1px"
+                      borderColor="red.200"
+                      borderRadius="md"
+                      p={3}
+                      w="100%"
+                    >
+                      <Text fontSize="sm" color="red.600">
+                        {error}
+                      </Text>
+                    </Box>
+                  )}
 
-              <Box as="form" onSubmit={handleLogin} w="100%">
-                <VStack spacing={4}>
-                  <FormControl isRequired>
-                    <FormLabel>{t("username")}</FormLabel>
+                  <Box w="100%">
                     <Input
-                      type="text"
-                      placeholder={t("enter_username")}
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      isDisabled={loading}
-                      focusBorderColor="blue.500"
+                      name="username"
+                      placeholder={t("login.username", "Username or Email")}
+                      value={formData.username}
+                      onChange={handleChange}
+                      size="lg"
                     />
-                  </FormControl>
+                  </Box>
 
-                  <FormControl isRequired>
-                    <FormLabel>{t("password")}</FormLabel>
+                  <Box w="100%" position="relative">
                     <Input
-                      type="password"
-                      placeholder={t("enter_password")}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      isDisabled={loading}
-                      focusBorderColor="blue.500"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder={t("login.password", "Password")}
+                      value={formData.password}
+                      onChange={handleChange}
+                      size="lg"
+                      pr={12}
                     />
-                  </FormControl>
+                    <Box
+                      position="absolute"
+                      right={3}
+                      top="50%"
+                      transform="translateY(-50%)"
+                      zIndex={2}
+                    >
+                      <IconButton
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                        onClick={() => setShowPassword(!showPassword)}
+                        variant="ghost"
+                        size="sm"
+                      >
+                        <Icon>{showPassword ? <FaEyeSlash /> : <FaEye />}</Icon>
+                      </IconButton>
+                    </Box>
+                  </Box>
+
+                  <Flex w="100%" justify="space-between" align="center">
+                    <CheckboxRoot
+                      checked={formData.remember_me}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          remember_me: checked,
+                        }))
+                      }
+                      size="sm"
+                    >
+                      <CheckboxControl />
+                      <CheckboxLabel>
+                        {t("login.remember", "Remember me")}
+                      </CheckboxLabel>
+                    </CheckboxRoot>
+                  </Flex>
 
                   <Button
                     type="submit"
-                    colorScheme="blue"
-                    width="full"
+                    colorPalette="blue"
                     size="lg"
-                    isLoading={loading}
-                    loadingText={`${t("logging_in")}...`}
-                    spinner={<Spinner size="sm" />}
+                    w="100%"
+                    loading={loading}
+                    loadingText={t("login.signingIn", "Signing in...")}
                   >
-                    {t("login")}
+                    {t("login.signin", "Sign In")}
                   </Button>
-                </VStack>
-              </Box>
 
-              <Flex justify="center" mt={4}>
-                <Text color={textColor}>
-                  {t("dont_have_account")}{" "}
-                  <ChakraLink
-                    as={Link}
-                    to="/register"
-                    color="blue.500"
-                    fontWeight="medium"
-                  >
-                    {t("register")}
-                  </ChakraLink>
-                </Text>
-              </Flex>
-            </VStack>
-          </CardBody>
-        </Card>
-      </Box>
+                  {/* Register Link */}
+                  <Box textAlign="center" w="100%">
+                    <Text fontSize="sm" color="gray.600">
+                      {t("login.noAccount", "Don't have an account?")}{" "}
+                      <ChakraLink
+                        as={Link}
+                        to="/register"
+                        color="blue.600"
+                        fontWeight="medium"
+                        _hover={{
+                          color: "blue.700",
+                          textDecoration: "underline",
+                        }}
+                      >
+                        <Icon mr={1}>
+                          <FaUserPlus />
+                        </Icon>
+                        {t("login.register", "Register here")}
+                      </ChakraLink>
+                    </Text>
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      {t(
+                        "login.registerNote",
+                        "Registration requires admin approval"
+                      )}
+                    </Text>
+                  </Box>
+                </VStack>
+              </form>
+            </Box>
+          </VStack>
+        </Box>
+      </Center>
     </Container>
   );
 }

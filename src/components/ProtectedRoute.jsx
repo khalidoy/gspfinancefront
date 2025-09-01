@@ -1,31 +1,54 @@
-import React, { useContext } from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import { AuthContext } from "../contexts/AuthContext";
-import { Spinner, Flex } from "@chakra-ui/react";
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { Spinner, Center, VStack, Text } from "@chakra-ui/react";
 
-function ProtectedRoute({ children }) {
-  const { currentUser, loading } = useContext(AuthContext);
-  const location = useLocation();
+// Helper function to check if user is authenticated
+const isAuthenticated = () => {
+  const authStatus = localStorage.getItem("isAuthenticated");
+  const user = localStorage.getItem("user");
+  return authStatus === "true" && user;
+};
 
-  console.log("ProtectedRoute render:", {
-    currentUser,
-    loading,
-    path: location.pathname,
-  });
-  if (loading) {
+// Helper function to get current user
+const getCurrentUser = () => {
+  try {
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+    return null;
+  }
+};
+
+function ProtectedRoute({ children, requireRole = null }) {
+  const authenticated = isAuthenticated();
+  const user = getCurrentUser();
+
+  // Show loading while checking authentication
+  if (authenticated === null) {
     return (
-      <Flex justify="center" align="center" height="100vh" mt="80px">
-        <Spinner size="xl" color="blue.500" />
-      </Flex>
+      <Center h="100vh">
+        <VStack spacing={4}>
+          <Spinner size="xl" color="blue.500" />
+          <Text>Loading...</Text>
+        </VStack>
+      </Center>
     );
   }
 
-  if (!currentUser) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // Redirect to login if not authenticated
+  if (!authenticated || !user) {
+    return <Navigate to="/login" replace />;
   }
 
-  // Use Fragment to prevent additional DOM nesting
-  return <>{children}</>;
+  // Check role requirements if specified
+  if (requireRole && user.role !== requireRole) {
+    // For now, just redirect to home. You could create an "Access Denied" page
+    return <Navigate to="/" replace />;
+  }
+
+  // User is authenticated and has required role
+  return children;
 }
 
 export default ProtectedRoute;

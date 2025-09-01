@@ -1,542 +1,658 @@
-// src/components/StudentModal.jsx
-
-import React from "react";
-import { Modal, Button, Form, Alert, Spinner } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import {
+  DialogRoot,
+  DialogBackdrop,
+  DialogContent,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  DialogCloseTrigger,
+  DialogTitle,
+  Button,
+  Input,
+  SelectRoot,
+  SelectTrigger,
+  SelectValueText,
+  SelectContent,
+  SelectItem,
+  Textarea,
+  VStack,
+  HStack,
+  Text,
+  Box,
+  Badge,
+  Separator,
+  SimpleGrid,
+  Avatar,
+  TabsRoot,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  NumberInputRoot,
+  NumberInputInput,
+  NumberInputDecrementTrigger,
+  NumberInputIncrementTrigger,
+  FieldRoot,
+  FieldLabel,
+  FieldErrorText,
+  Switch,
+  SwitchControl,
+  SwitchLabel,
+  SwitchThumb,
+} from "@chakra-ui/react";
+import {
+  FaUser,
+  FaIdCard,
+  FaGraduationCap,
+  FaMoneyBillWave,
+  FaTrash,
+  FaPhone,
+  FaEnvelope,
+} from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 
-const StudentModal = ({
-  show,
-  handleClose,
+function StudentModal({
+  isOpen,
+  onClose,
   student,
-  setStudent,
-  originalStudent,
-  handleSave,
-  handleDelete,
-  months,
-  autocompleteEnabled,
-  setAutocompleteEnabled,
-  error,
-  setError,
-  isSaving, // New prop to indicate saving state
-}) => {
+  onStudentChange,
+  onSave,
+  onDelete,
+  isSaving,
+  isNew,
+}) {
   const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState("info");
+  const [errors, setErrors] = useState({});
 
-  if (!student) return null;
+  useEffect(() => {
+    if (isOpen && isNew) {
+      setActiveTab("info");
+      setErrors({});
+    }
+  }, [isOpen, isNew]);
 
-  const handlePaymentChange = (type, key, value) => {
-    if (type === "real") {
-      handleRealPaymentChange(key, value);
-    } else if (type === "agreed") {
-      handleAgreedPaymentChange(key, value);
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!student?.full_name?.trim()) {
+      newErrors.full_name = "Full name is required";
+    }
+
+    if (!student?.student_number?.trim()) {
+      newErrors.student_number = "Student number is required";
+    }
+
+    if (!student?.classe?.trim()) {
+      newErrors.classe = "Class is required";
+    }
+
+    if (student?.email && !/\S+@\S+\.\S+/.test(student.email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSave = () => {
+    if (validateForm()) {
+      onSave();
     }
   };
 
-  const handleRealPaymentChange = (key, value) => {
-    const agreedKey = key.replace("_real", "_agreed");
-    const agreedValue = Number(
-      student.payments.agreed_payments?.[agreedKey] || 0
-    );
-    if (agreedValue <= 0 && Number(value) > 0) {
-      setError(t("cannot_set_real_payment_without_agreed"));
-      return;
-    }
-
-    setStudent((prev) => ({
-      ...prev,
-      payments: {
-        ...prev.payments,
-        real_payments: {
-          ...prev.payments.real_payments,
-          [key]: value === "" ? 0 : Number(value),
-        },
-      },
-    }));
-  };
-
-  const handleAgreedPaymentChange = (key, value) => {
-    const isTransport = key.includes("_transport_agreed");
-    const paymentCategory = isTransport
-      ? "transport_agreed"
-      : key === "insurance_agreed"
-      ? "insurance_agreed"
-      : "monthly_agreed";
-    const newValue = value === "" ? "0" : value;
-
-    setStudent((prev) => {
-      if (!prev) return prev;
-
-      const updatedAgreedPayments = { ...prev.payments.agreed_payments };
-      updatedAgreedPayments[key] = newValue;
-
-      if (autocompleteEnabled) {
-        const keysToUpdate = Object.keys(updatedAgreedPayments).filter((k) => {
-          if (paymentCategory === "monthly_agreed") {
-            return (
-              k.endsWith("_agreed") &&
-              !k.includes("transport") &&
-              !k.includes("insurance")
-            );
-          } else if (paymentCategory === "transport_agreed") {
-            return k.endsWith("_transport_agreed") && k !== key;
-          }
-          return false;
-        });
-
-        keysToUpdate.forEach((k) => {
-          updatedAgreedPayments[k] = newValue;
-        });
-      }
-
-      return {
-        ...prev,
-        payments: {
-          ...prev.payments,
-          agreed_payments: updatedAgreedPayments,
-        },
-      };
+  const handleInputChange = (field, value) => {
+    onStudentChange({
+      ...student,
+      [field]: value,
     });
+
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors({
+        ...errors,
+        [field]: undefined,
+      });
+    }
   };
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case "active":
+        return "green";
+      case "inactive":
+        return "red";
+      case "graduated":
+        return "blue";
+      default:
+        return "gray";
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "MAD",
+    })
+      .format(amount || 0)
+      .replace("MAD", "DH");
+  };
+
+  if (!isOpen) return null;
 
   return (
-    <Modal
-      show={show}
-      onHide={handleClose}
-      size="xl"
-      aria-labelledby="student-modal-title"
-      centered
+    <DialogRoot
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      size="6xl"
     >
-      <Modal.Header closeButton>
-        <Modal.Title id="student-modal-title" className="w-100 text-center">
-          {originalStudent ? t("edit_student") : t("add_new_student")}
-        </Modal.Title>
-      </Modal.Header>
-      <Form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSave();
-        }}
-      >
-        <Modal.Body>
-          {error && (
-            <Alert variant="danger" onClose={() => setError("")} dismissible>
-              {error}
-            </Alert>
-          )}
-          {/* Student Name */}
-          <Form.Group controlId="studentName" className="mb-3">
-            <Form.Label>{t("student_name")}</Form.Label>
-            <Form.Control
-              type="text"
-              value={student.name}
-              onChange={(e) =>
-                setStudent((prev) => ({ ...prev, name: e.target.value }))
-              }
-              required
-              disabled={isSaving} // Disable input during save
-            />
-          </Form.Group>
-          {/* Joined Month */}
-          <h5>{t("joined_in")}</h5>
-          <Form.Control
-            as="select"
-            value={student.joined_month}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              const currentMonth = months.find((m) => m.monthNum === value);
+      <DialogBackdrop />
+      <DialogContent maxW="6xl" maxH="90vh">
+        <DialogHeader>
+          <DialogTitle>
+            <HStack spacing={3}>
+              <Avatar
+                size="md"
+                name={student?.full_name || "New Student"}
+                bg="blue.500"
+                color="white"
+              />
+              <VStack align="start" spacing={0}>
+                <Text fontSize="lg" fontWeight="bold">
+                  {isNew ? "New Student" : student?.full_name}
+                </Text>
+                {!isNew && (
+                  <HStack>
+                    <Text fontSize="sm" color="gray.600">
+                      {student?.student_number}
+                    </Text>
+                    <Badge colorScheme={getStatusColor(student?.status)}>
+                      {student?.status || "active"}
+                    </Badge>
+                  </HStack>
+                )}
+              </VStack>
+            </HStack>
+          </DialogTitle>
+          <DialogCloseTrigger />
+        </DialogHeader>
 
-              if (!currentMonth) return;
+        <DialogBody>
+          <TabsRoot value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="info">
+                <HStack>
+                  <FaUser />
+                  <Text>Personal Info</Text>
+                </HStack>
+              </TabsTrigger>
+              <TabsTrigger value="academic">
+                <HStack>
+                  <FaGraduationCap />
+                  <Text>Academic Info</Text>
+                </HStack>
+              </TabsTrigger>
+              <TabsTrigger value="financial">
+                <HStack>
+                  <FaMoneyBillWave />
+                  <Text>Financial Info</Text>
+                </HStack>
+              </TabsTrigger>
+              <TabsTrigger value="contact">
+                <HStack>
+                  <FaPhone />
+                  <Text>Contact Info</Text>
+                </HStack>
+              </TabsTrigger>
+            </TabsList>
 
-              const joinedOrder = currentMonth.order;
-              const previousMonths = months.filter(
-                (m) => m.order < joinedOrder
-              );
+            <TabsContent value="info">
+              <VStack spacing={4} align="stretch">
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                  <Field invalid={!!errors.full_name}>
+                    <FieldLabel>Full Name *</FieldLabel>
+                    <Input
+                      value={student?.full_name || ""}
+                      onChange={(e) =>
+                        handleInputChange("full_name", e.target.value)
+                      }
+                      placeholder="Enter full name"
+                    />
+                    {errors.full_name && (
+                      <FieldErrorText>{errors.full_name}</FieldErrorText>
+                    )}
+                  </Field>
 
-              const hasPreviousPayments = previousMonths.some((m) => {
-                const realKey = `${m.key}_real`;
-                const agreedKey = `${m.key}_agreed`;
-                const transportRealKey = `${m.key}_transport_real`;
-                const transportAgreedKey = `${m.key}_transport_agreed`;
-                const insuranceReal =
-                  student.payments.real_payments.insurance_real;
-                const insuranceAgreed =
-                  student.payments.agreed_payments.insurance_agreed;
+                  <Field invalid={!!errors.student_number}>
+                    <FieldLabel>Student Number *</FieldLabel>
+                    <Input
+                      value={student?.student_number || ""}
+                      onChange={(e) =>
+                        handleInputChange("student_number", e.target.value)
+                      }
+                      placeholder="Enter student number"
+                    />
+                    {errors.student_number && (
+                      <FieldErrorText>{errors.student_number}</FieldErrorText>
+                    )}
+                  </Field>
 
-                return (
-                  Number(student.payments.real_payments[realKey] || 0) > 0 ||
-                  Number(student.payments.agreed_payments[agreedKey] || 0) >
-                    0 ||
-                  Number(
-                    student.payments.real_payments[transportRealKey] || 0
-                  ) > 0 ||
-                  Number(
-                    student.payments.agreed_payments[transportAgreedKey] || 0
-                  ) > 0 ||
-                  Number(insuranceReal || 0) > 0 ||
-                  Number(insuranceAgreed || 0) > 0
-                );
-              });
+                  <Field>
+                    <FieldLabel>CIN</FieldLabel>
+                    <Input
+                      value={student?.cin || ""}
+                      onChange={(e) => handleInputChange("cin", e.target.value)}
+                      placeholder="Enter CIN"
+                    />
+                  </Field>
 
-              if (
-                hasPreviousPayments &&
-                originalStudent?.joined_month !== value
-              ) {
-                setError(t("cannot_set_joined_month_with_previous_payments"));
-                return;
-              }
+                  <Field>
+                    <FieldLabel>Birth Date</FieldLabel>
+                    <Input
+                      type="date"
+                      value={student?.date_naissance || ""}
+                      onChange={(e) =>
+                        handleInputChange("date_naissance", e.target.value)
+                      }
+                    />
+                  </Field>
 
-              // Reset previous months' payments
-              const updatedRealPayments = { ...student.payments.real_payments };
-              const updatedAgreedPayments = {
-                ...student.payments.agreed_payments,
-              };
+                  <Field>
+                    <FieldLabel>Address</FieldLabel>
+                    <Textarea
+                      value={student?.adresse || ""}
+                      onChange={(e) =>
+                        handleInputChange("adresse", e.target.value)
+                      }
+                      placeholder="Enter address"
+                      rows={3}
+                    />
+                  </Field>
 
-              previousMonths.forEach((m) => {
-                updatedRealPayments[`${m.key}_real`] = 0;
-                updatedRealPayments[`${m.key}_transport_real`] = 0;
-                updatedAgreedPayments[`${m.key}_agreed`] = "0";
-                updatedAgreedPayments[`${m.key}_transport_agreed`] = "0";
-              });
+                  <Field>
+                    <FieldLabel>Status</FieldLabel>
+                    <SelectRoot
+                      value={[student?.status || "active"]}
+                      onValueChange={(details) =>
+                        handleInputChange("status", details.value[0])
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValueText placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem item="active" value="active">
+                          Active
+                        </SelectItem>
+                        <SelectItem item="inactive" value="inactive">
+                          Inactive
+                        </SelectItem>
+                        <SelectItem item="graduated" value="graduated">
+                          Graduated
+                        </SelectItem>
+                      </SelectContent>
+                    </SelectRoot>
+                  </Field>
+                </SimpleGrid>
+              </VStack>
+            </TabsContent>
 
-              setStudent((prev) => ({
-                ...prev,
-                joined_month: value,
-                payments: {
-                  ...prev.payments,
-                  real_payments: updatedRealPayments,
-                  agreed_payments: updatedAgreedPayments,
-                },
-              }));
-            }}
-            className="mb-3"
-            style={{ width: "200px" }}
-            disabled={isSaving} // Disable select during save
-          >
-            {months.map((month) => (
-              <option key={month.key} value={month.monthNum}>
-                {month.displayName}
-              </option>
-            ))}
-          </Form.Control>
-          {/* Insurance Payments */}
-          <h5>{t("insurance_payments")}</h5>
-          <table className="table table-bordered">
-            <thead>
-              <tr>
-                <th>{t("real_insurance")}</th>
-                <th>{t("agreed_insurance")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td
-                  className={
-                    student.payments.real_payments.insurance_real > 0
-                      ? "highlight-green"
-                      : "highlight-red"
-                  }
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#f0f8ff";
-                    e.currentTarget.style.cursor = "pointer";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "";
-                    e.currentTarget.style.cursor = "default";
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Implement click handler if needed
-                  }}
-                >
-                  <Form.Control
-                    type="number"
-                    min="0"
-                    value={
-                      student.payments.real_payments?.insurance_real || "0"
-                    }
-                    onChange={(e) =>
-                      handlePaymentChange(
-                        "real",
-                        "insurance_real",
-                        e.target.value
-                      )
-                    }
-                    disabled={isSaving} // Disable input during save
-                  />
-                </td>
-                <td
-                  className={
-                    student.payments.agreed_payments.insurance_agreed > 0
-                      ? "highlight-green"
-                      : "highlight-red"
-                  }
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#f0f8ff";
-                    e.currentTarget.style.cursor = "pointer";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "";
-                    e.currentTarget.style.cursor = "default";
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Implement click handler if needed
-                  }}
-                >
-                  <Form.Control
-                    type="number"
-                    min="0"
-                    value={
-                      student.payments.agreed_payments?.insurance_agreed || "0"
-                    }
-                    onChange={(e) =>
-                      handlePaymentChange(
-                        "agreed",
-                        "insurance_agreed",
-                        e.target.value
-                      )
-                    }
-                    disabled={isSaving} // Disable input during save
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          {/* Agreed Payments */}
-          <h5>{t("agreed_payments")}</h5>
+            <TabsContent value="academic">
+              <VStack spacing={4} align="stretch">
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                  <Field invalid={!!errors.classe}>
+                    <FieldLabel>Class *</FieldLabel>
+                    <SelectRoot
+                      value={[student?.classe || ""]}
+                      onValueChange={(details) =>
+                        handleInputChange("classe", details.value[0])
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValueText placeholder="Select class" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem item="1BAC" value="1BAC">
+                          1BAC
+                        </SelectItem>
+                        <SelectItem item="2BAC" value="2BAC">
+                          2BAC
+                        </SelectItem>
+                        <SelectItem item="TC" value="TC">
+                          TC
+                        </SelectItem>
+                      </SelectContent>
+                    </SelectRoot>
+                    {errors.classe && (
+                      <FieldErrorText>{errors.classe}</FieldErrorText>
+                    )}
+                  </Field>
 
-          <Form.Group controlId="autocompleteSwitch" className="mb-3">
-            <Form.Check
-              type="switch"
-              id="autocomplete-switch"
-              label={t("enable_autocomplete")}
-              checked={autocompleteEnabled}
-              onChange={(e) => setAutocompleteEnabled(e.target.checked)}
-              disabled={isSaving} // Disable switch during save
-            />
-          </Form.Group>
+                  <Field>
+                    <FieldLabel>Level</FieldLabel>
+                    <SelectRoot
+                      value={[student?.niveau || ""]}
+                      onValueChange={(details) =>
+                        handleInputChange("niveau", details.value[0])
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValueText placeholder="Select level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem item="Debutant" value="Debutant">
+                          Beginner
+                        </SelectItem>
+                        <SelectItem item="Intermediaire" value="Intermediaire">
+                          Intermediate
+                        </SelectItem>
+                        <SelectItem item="Avance" value="Avance">
+                          Advanced
+                        </SelectItem>
+                      </SelectContent>
+                    </SelectRoot>
+                  </Field>
 
-          {autocompleteEnabled && (
-            <Alert variant="info">{t("autocomplete_info")}</Alert>
-          )}
+                  <Field>
+                    <FieldLabel>Branch</FieldLabel>
+                    <Input
+                      value={student?.filiere || ""}
+                      onChange={(e) =>
+                        handleInputChange("filiere", e.target.value)
+                      }
+                      placeholder="Enter branch"
+                    />
+                  </Field>
 
-          <div className="table-responsive">
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th>{t("payment_type")}</th>
-                  {months.map((month) => (
-                    <th key={month.key}>{month.displayName}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {["monthly", "transport"].map((paymentType) => (
-                  <tr key={paymentType}>
-                    <td>{`${
-                      paymentType.charAt(0).toUpperCase() + paymentType.slice(1)
-                    } ${t("agreed")}`}</td>
-                    {months.map((month) => {
-                      const joinedMonth = months.find(
-                        (m) => m.monthNum === student.joined_month
-                      );
-                      const joinedOrder = joinedMonth
-                        ? joinedMonth.order
-                        : null;
+                  <Field>
+                    <FieldLabel>Enrollment Date</FieldLabel>
+                    <Input
+                      type="date"
+                      value={student?.date_inscription || ""}
+                      onChange={(e) =>
+                        handleInputChange("date_inscription", e.target.value)
+                      }
+                    />
+                  </Field>
+                </SimpleGrid>
 
-                      const isDisabled =
-                        joinedOrder && month.order < joinedOrder;
+                <Separator />
 
-                      const key =
-                        paymentType === "monthly"
-                          ? `${month.key}_agreed`
-                          : `${month.key}_transport_agreed`;
+                <Box>
+                  <Text fontSize="md" fontWeight="semibold" mb={3}>
+                    Transport Information
+                  </Text>
+                  <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                    <Field>
+                      <FieldLabel>Use Transport</FieldLabel>
+                      <Switch
+                        checked={student?.transport || false}
+                        onCheckedChange={(checked) =>
+                          handleInputChange("transport", checked)
+                        }
+                      >
+                        <SwitchControl>
+                          <SwitchThumb />
+                        </SwitchControl>
+                        <SwitchLabel>
+                          {student?.transport ? "Yes" : "No"}
+                        </SwitchLabel>
+                      </Switch>
+                    </Field>
 
-                      return (
-                        <td
-                          key={key}
-                          className={isDisabled ? "disabled-cell" : ""}
-                          onMouseEnter={(e) => {
-                            if (!isDisabled) {
-                              e.currentTarget.style.backgroundColor = "#f0f8ff";
-                              e.currentTarget.style.cursor = "pointer";
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isDisabled) {
-                              e.currentTarget.style.backgroundColor = "";
-                              e.currentTarget.style.cursor = "default";
-                            }
-                          }}
-                          onClick={(e) => {
-                            if (isDisabled) return;
-                            e.stopPropagation();
-                            // Implement click handler if needed
-                          }}
+                    {student?.transport && (
+                      <Field>
+                        <FieldLabel>Transport Fee</FieldLabel>
+                        <NumberInputRoot
+                          value={student?.frais_transport || 0}
+                          onValueChange={(details) =>
+                            handleInputChange("frais_transport", details.value)
+                          }
+                          min={0}
                         >
-                          {!isDisabled ? (
-                            <Form.Control
-                              type="number"
-                              min="0"
-                              value={
-                                student.payments.agreed_payments?.[key] || "0"
-                              }
-                              onChange={(e) =>
-                                handlePaymentChange(
-                                  "agreed",
-                                  key,
-                                  e.target.value
-                                )
-                              }
-                              disabled={isSaving} // Disable input during save
-                            />
-                          ) : (
-                            ""
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                          <NumberInputInput />
+                          <NumberInputIncrementTrigger />
+                          <NumberInputDecrementTrigger />
+                        </NumberInputRoot>
+                      </Field>
+                    )}
+                  </SimpleGrid>
+                </Box>
+              </VStack>
+            </TabsContent>
 
-          {/* Real Payments */}
-          <h5>{t("real_payments")}</h5>
-          <div className="table-responsive">
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th>{t("payment_type")}</th>
-                  {months.map((month) => (
-                    <th key={month.key}>{month.displayName}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {["monthly", "transport"].map((paymentType) => (
-                  <tr key={paymentType}>
-                    <td>{`${
-                      paymentType.charAt(0).toUpperCase() + paymentType.slice(1)
-                    } ${t("real")}`}</td>
-                    {months.map((month) => {
-                      const joinedMonth = months.find(
-                        (m) => m.monthNum === student.joined_month
-                      );
-                      const joinedOrder = joinedMonth
-                        ? joinedMonth.order
-                        : null;
+            <TabsContent value="financial">
+              <VStack spacing={4} align="stretch">
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                  <Field>
+                    <FieldLabel>Monthly Fee</FieldLabel>
+                    <NumberInputRoot
+                      value={student?.frais_mensuel || 0}
+                      onValueChange={(details) =>
+                        handleInputChange("frais_mensuel", details.value)
+                      }
+                      min={0}
+                    >
+                      <NumberInputInput />
+                      <NumberInputIncrementTrigger />
+                      <NumberInputDecrementTrigger />
+                    </NumberInputRoot>
+                  </Field>
 
-                      const isDisabled =
-                        joinedOrder && month.order < joinedOrder;
+                  <Field>
+                    <FieldLabel>Registration Fee</FieldLabel>
+                    <NumberInputRoot
+                      value={student?.frais_inscription || 0}
+                      onValueChange={(details) =>
+                        handleInputChange("frais_inscription", details.value)
+                      }
+                      min={0}
+                    >
+                      <NumberInputInput />
+                      <NumberInputIncrementTrigger />
+                      <NumberInputDecrementTrigger />
+                    </NumberInputRoot>
+                  </Field>
 
-                      const key =
-                        paymentType === "monthly"
-                          ? `${month.key}_real`
-                          : `${month.key}_transport_real`;
+                  <Field>
+                    <FieldLabel>Discount (%)</FieldLabel>
+                    <NumberInputRoot
+                      value={student?.reduction || 0}
+                      onValueChange={(details) =>
+                        handleInputChange("reduction", details.value)
+                      }
+                      min={0}
+                      max={100}
+                    >
+                      <NumberInputInput />
+                      <NumberInputIncrementTrigger />
+                      <NumberInputDecrementTrigger />
+                    </NumberInputRoot>
+                  </Field>
 
-                      return (
-                        <td
-                          key={key}
-                          className={isDisabled ? "disabled-cell" : ""}
-                          onMouseEnter={(e) => {
-                            if (!isDisabled) {
-                              e.currentTarget.style.backgroundColor = "#f0f8ff";
-                              e.currentTarget.style.cursor = "pointer";
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isDisabled) {
-                              e.currentTarget.style.backgroundColor = "";
-                              e.currentTarget.style.cursor = "default";
-                            }
-                          }}
-                          onClick={(e) => {
-                            if (isDisabled) return;
-                            e.stopPropagation();
-                            // Implement click handler if needed
-                          }}
-                        >
-                          {!isDisabled ? (
-                            <Form.Control
-                              type="number"
-                              min="0"
-                              value={
-                                student.payments.real_payments?.[key] || ""
-                              }
-                              onChange={(e) =>
-                                handlePaymentChange("real", key, e.target.value)
-                              }
-                              disabled={isSaving} // Disable input during save
-                            />
-                          ) : (
-                            ""
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                  <Field>
+                    <FieldLabel>Balance</FieldLabel>
+                    <Text
+                      fontSize="lg"
+                      fontWeight="bold"
+                      color={student?.solde < 0 ? "red.500" : "green.500"}
+                    >
+                      {formatCurrency(student?.solde)}
+                    </Text>
+                  </Field>
+                </SimpleGrid>
 
-          {/* Observations */}
-          <h5>{t("observations")}</h5>
-          <Form.Control
-            as="textarea"
-            value={student.observations}
-            onChange={(e) =>
-              setStudent((prev) => ({
-                ...prev,
-                observations: e.target.value,
-              }))
-            }
-            rows={3}
-            disabled={isSaving} // Disable textarea during save
-          />
-        </Modal.Body>
-        <Modal.Footer>
-          {originalStudent && (
-            <Button
-              variant="danger"
-              onClick={() => handleDelete(student)}
-              disabled={isSaving} // Disable during save
-            >
-              {t("delete_student")}
-            </Button>
-          )}
-          <Button
-            variant="secondary"
-            onClick={handleClose}
-            disabled={isSaving} // Disable during save
-          >
-            {t("close")}
-          </Button>
-          <Button
-            variant="primary"
-            type="submit"
-            disabled={isSaving} // Disable during save
-          >
-            {isSaving ? (
-              <>
-                <Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                />{" "}
-                {t("saving")}
-              </>
-            ) : (
-              t("save_changes")
+                <Separator />
+
+                <Box>
+                  <Text fontSize="md" fontWeight="semibold" mb={3}>
+                    Payment Summary
+                  </Text>
+                  <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+                    <Box
+                      p={4}
+                      border="1px solid"
+                      borderColor="gray.200"
+                      borderRadius="md"
+                    >
+                      <Text fontSize="sm" color="gray.600">
+                        Total Paid
+                      </Text>
+                      <Text fontSize="lg" fontWeight="bold" color="green.500">
+                        {formatCurrency(student?.total_paye || 0)}
+                      </Text>
+                    </Box>
+                    <Box
+                      p={4}
+                      border="1px solid"
+                      borderColor="gray.200"
+                      borderRadius="md"
+                    >
+                      <Text fontSize="sm" color="gray.600">
+                        Total Due
+                      </Text>
+                      <Text fontSize="lg" fontWeight="bold" color="blue.500">
+                        {formatCurrency(student?.total_du || 0)}
+                      </Text>
+                    </Box>
+                    <Box
+                      p={4}
+                      border="1px solid"
+                      borderColor="gray.200"
+                      borderRadius="md"
+                    >
+                      <Text fontSize="sm" color="gray.600">
+                        Remaining Balance
+                      </Text>
+                      <Text
+                        fontSize="lg"
+                        fontWeight="bold"
+                        color={student?.solde < 0 ? "red.500" : "green.500"}
+                      >
+                        {formatCurrency(student?.solde || 0)}
+                      </Text>
+                    </Box>
+                  </SimpleGrid>
+                </Box>
+              </VStack>
+            </TabsContent>
+
+            <TabsContent value="contact">
+              <VStack spacing={4} align="stretch">
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                  <Field>
+                    <FieldLabel>Phone</FieldLabel>
+                    <Input
+                      value={student?.telephone || ""}
+                      onChange={(e) =>
+                        handleInputChange("telephone", e.target.value)
+                      }
+                      placeholder="Enter phone number"
+                    />
+                  </Field>
+
+                  <Field invalid={!!errors.email}>
+                    <FieldLabel>Email</FieldLabel>
+                    <Input
+                      type="email"
+                      value={student?.email || ""}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
+                      placeholder="Enter email"
+                    />
+                    {errors.email && (
+                      <FieldErrorText>{errors.email}</FieldErrorText>
+                    )}
+                  </Field>
+                </SimpleGrid>
+
+                <Separator />
+
+                <Box>
+                  <Text fontSize="md" fontWeight="semibold" mb={3}>
+                    Parent Information
+                  </Text>
+                  <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                    <Field>
+                      <FieldLabel>Parent Name</FieldLabel>
+                      <Input
+                        value={student?.nom_parent || ""}
+                        onChange={(e) =>
+                          handleInputChange("nom_parent", e.target.value)
+                        }
+                        placeholder="Enter parent name"
+                      />
+                    </Field>
+
+                    <Field>
+                      <FieldLabel>Parent Phone</FieldLabel>
+                      <Input
+                        value={student?.telephone_parent || ""}
+                        onChange={(e) =>
+                          handleInputChange("telephone_parent", e.target.value)
+                        }
+                        placeholder="Enter parent phone"
+                      />
+                    </Field>
+
+                    <Field>
+                      <FieldLabel>Parent Email</FieldLabel>
+                      <Input
+                        type="email"
+                        value={student?.email_parent || ""}
+                        onChange={(e) =>
+                          handleInputChange("email_parent", e.target.value)
+                        }
+                        placeholder="Enter parent email"
+                      />
+                    </Field>
+
+                    <Field>
+                      <FieldLabel>Emergency Contact</FieldLabel>
+                      <Input
+                        value={student?.contact_urgence || ""}
+                        onChange={(e) =>
+                          handleInputChange("contact_urgence", e.target.value)
+                        }
+                        placeholder="Enter emergency contact"
+                      />
+                    </Field>
+                  </SimpleGrid>
+                </Box>
+              </VStack>
+            </TabsContent>
+          </TabsRoot>
+        </DialogBody>
+
+        <DialogFooter>
+          <HStack spacing={3}>
+            {!isNew && (
+              <Button
+                colorScheme="red"
+                variant="outline"
+                onClick={onDelete}
+                size="md"
+              >
+                <FaTrash /> Delete
+              </Button>
             )}
-          </Button>
-        </Modal.Footer>
-      </Form>
-    </Modal>
+            <Button variant="outline" onClick={onClose} size="md" mr="auto">
+              Cancel
+            </Button>
+            <Button
+              colorScheme="blue"
+              onClick={handleSave}
+              loading={isSaving}
+              size="md"
+            >
+              Save
+            </Button>
+          </HStack>
+        </DialogFooter>
+      </DialogContent>
+    </DialogRoot>
   );
-};
+}
 
 export default StudentModal;
