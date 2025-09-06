@@ -9,12 +9,11 @@ import { Box, Spinner, Center, VStack, Text } from "@chakra-ui/react";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Navbar from "./components/Navbar";
+import Navbar from "./components/Navbar_new";
 import Home from "./pages/Home";
 import Classes from "./pages/Classes";
 import Payments from "./pages/Payments";
-import TestChakra from "./pages/TestChakra";
-import ChatSimpleBasic from "./pages/ChatSimpleBasic";
+import GPTLikeChat from "./pages/GPTLikeChat";
 
 // Helper functions for authentication
 const isAuthenticated = () => {
@@ -77,32 +76,33 @@ function App() {
 
   return (
     <Router>
-      <Box minH="100vh" bg="gray.50">
+      <Box minH="100vh" overflowY="auto">
         {/* Show navbar only when user is authenticated */}
         {user && <Navbar user={user} onLogout={handleLogout} />}
 
-        <Routes>
-          {/* Public routes */}
-          <Route
-            path="/login"
-            element={
-              user ? (
-                <Navigate to="/" replace />
-              ) : (
-                <Login onLoginSuccess={handleLoginSuccess} />
-              )
-            }
-          />
+        <Box flex="1" overflowY="auto">
+          <Routes>
+            {/* Public routes */}
+            <Route
+              path="/login"
+              element={
+                user ? (
+                  <Navigate to="/" replace />
+                ) : (
+                  <Login onLoginSuccess={handleLoginSuccess} />
+                )
+              }
+            />
 
-          {/* Protected routes */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Home user={user} onLogout={handleLogout} />
-              </ProtectedRoute>
-            }
-          />
+            {/* Protected routes */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Home user={user} onLogout={handleLogout} />
+                </ProtectedRoute>
+              }
+            />
 
           <Route
             path="/students"
@@ -127,6 +127,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Payments user={user} onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/ai-assistant"
+            element={
+              <ProtectedRoute>
+                <GPTLikeChat user={user} onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />
@@ -177,7 +186,7 @@ function App() {
             path="/ai/*"
             element={
               <ProtectedRoute>
-                <TestChakra user={user} onLogout={handleLogout} />
+                <GPTLikeChat user={user} onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />
@@ -186,7 +195,7 @@ function App() {
             path="/chat"
             element={
               <ProtectedRoute>
-                <ChatSimpleBasic user={user} onLogout={handleLogout} />
+                <GPTLikeChat user={user} onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />
@@ -225,9 +234,10 @@ function App() {
             }
           />
 
-          {/* Redirect all other routes to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Redirect all other routes to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Box>
       </Box>
     </Router>
   );
