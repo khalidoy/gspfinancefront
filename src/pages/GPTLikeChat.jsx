@@ -34,14 +34,14 @@ import {
   DrawerCloseButton,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { 
-  FaPaperPlane, 
-  FaRobot, 
-  FaUser, 
-  FaChartBar, 
-  FaDatabase, 
+import {
+  FaPaperPlane,
+  FaRobot,
+  FaUser,
+  FaChartBar,
+  FaDatabase,
   FaBrain,
-  FaExclamationTriangle
+  FaExclamationTriangle,
 } from "react-icons/fa";
 
 // Import Enhanced AI Chart Component
@@ -73,7 +73,7 @@ const ChatInput = ({
       shadow="lg"
       _hover={{
         shadow: "xl",
-        borderColor: "blue.300"
+        borderColor: "blue.300",
       }}
       transition="all 0.3s ease"
     >
@@ -96,12 +96,12 @@ const ChatInput = ({
             lineHeight="1.4"
             display="flex"
             alignItems="center"
-            _focus={{ 
-              outline: "none"
+            _focus={{
+              outline: "none",
             }}
-            _placeholder={{ 
+            _placeholder={{
               color: "gray.400",
-              lineHeight: "1.4"
+              lineHeight: "1.4",
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -124,21 +124,16 @@ const ChatInput = ({
             _hover={{
               bg: "gray.700",
               transform: "scale(1.05)",
-              shadow: "md"
+              shadow: "md",
             }}
             _disabled={{
               bg: "gray.300",
-              color: "gray.500"
+              color: "gray.500",
             }}
             transition="all 0.2s ease"
           >
             {isLoading ? (
-              <Spinner 
-                size="sm" 
-                color="white"
-                thickness="2px"
-                speed="0.8s"
-              />
+              <Spinner size="sm" color="white" thickness="2px" speed="0.8s" />
             ) : (
               <FaPaperPlane />
             )}
@@ -157,6 +152,14 @@ const GPTLikeChat = ({ user, onLogout }) => {
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Debug environment variables
+  useEffect(() => {
+    console.log("🔍 Environment Variables Debug:");
+    console.log("REACT_APP_BACKEND_URL:", process.env.REACT_APP_BACKEND_URL);
+    console.log("REACT_APP_MCP_URL:", process.env.REACT_APP_MCP_URL);
+    console.log("REACT_APP_API_URL:", process.env.REACT_APP_API_URL);
+  }, []);
 
   // Color scheme for beautiful UI
   const bgGradient = "linear(to-br, gray.50, blue.50)";
@@ -435,14 +438,14 @@ const GPTLikeChat = ({ user, onLogout }) => {
     }
   };
 
-  // Download smart data using correct API endpoint
+  // Download smart data using MCP server endpoint
   const downloadSmartData = async (userQuery, dataType = "auto") => {
     try {
       setIsLoading(true);
 
-      // Using the correct backend API endpoint: /ai/export/smart
+      // Using the MCP server API endpoint: /ai/export/smart
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/ai/export/smart`,
+        `${process.env.REACT_APP_MCP_URL}/ai/export/smart`,
         {
           query: userQuery,
           data_type: dataType,
@@ -830,31 +833,34 @@ const GPTLikeChat = ({ user, onLogout }) => {
               border="1px solid"
               borderColor={isError ? "red.200" : "gray.200"}
             >
-              {isError ? <FaExclamationTriangle color="#e53e3e" /> : <FaRobot color="#4a5568" />}
+              {isError ? (
+                <FaExclamationTriangle color="#e53e3e" />
+              ) : (
+                <FaRobot color="#4a5568" />
+              )}
             </Box>
           )}
 
-          <Box
-            maxW="95%"
-            minW="300px"
-          >
+          <Box maxW="95%" minW="300px">
             {/* Professional message bubble */}
             <Box
               bg={isUser ? "gray.100" : isError ? "red.50" : "white"}
               color={isError ? "red.800" : "gray.800"}
               borderRadius="lg"
               border="1px solid"
-              borderColor={isUser ? "gray.200" : isError ? "red.200" : "gray.200"}
+              borderColor={
+                isUser ? "gray.200" : isError ? "red.200" : "gray.200"
+              }
               p={4}
               shadow="sm"
               _hover={{
-                shadow: "md"
+                shadow: "md",
               }}
               transition="all 0.2s ease"
             >
               {/* Message content */}
-              <Box 
-                fontSize="sm" 
+              <Box
+                fontSize="sm"
                 lineHeight="1.6"
                 color="gray.800"
                 fontFamily="system-ui, -apple-system, sans-serif"
@@ -864,25 +870,25 @@ const GPTLikeChat = ({ user, onLogout }) => {
 
               {/* Enhanced Data Visualization for AI responses */}
               {!isUser && !isError && message.aiResponse && (
-                <EnhancedDataVisualization 
-                  aiResponse={message.aiResponse} 
+                <EnhancedDataVisualization
+                  aiResponse={message.aiResponse}
                   userQuestion={message.content}
                 />
               )}
             </Box>
 
             {/* Timestamp */}
-            <Text 
-              fontSize="xs" 
-              color="gray.500" 
-              mt={2} 
+            <Text
+              fontSize="xs"
+              color="gray.500"
+              mt={2}
               ml={isUser ? "auto" : "0"}
               textAlign={isUser ? "right" : "left"}
               fontFamily="system-ui, -apple-system, sans-serif"
             >
-              {new Date(message.timestamp).toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit' 
+              {new Date(message.timestamp).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
               })}
             </Text>
           </Box>
@@ -1343,7 +1349,7 @@ const GPTLikeChat = ({ user, onLogout }) => {
     scrollToBottom();
   }, [messages]);
 
-  // Enhanced submit handler with correct API endpoint
+  // Enhanced submit handler with MCP server endpoint
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!inputValue.trim() || isLoading) return;
@@ -1363,9 +1369,9 @@ const GPTLikeChat = ({ user, onLogout }) => {
     console.log("Message sent");
 
     try {
-      // Using the correct backend API endpoint: /ai/chat
+      // Using the MCP server API endpoint: /ai/chat
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/ai/chat`,
+        `${process.env.REACT_APP_MCP_URL}/ai/chat`,
         {
           message: userMessage.content,
           session_id: `session_${Date.now()}`,
@@ -1399,15 +1405,15 @@ const GPTLikeChat = ({ user, onLogout }) => {
       let errorContent = "Failed to process query";
       if (error.response?.status === 404) {
         errorContent =
-          "❌ **Backend Not Available**\n\nThe AI backend server is not running or not accessible. Please check:\n• Backend server is running on correct port\n• REACT_APP_BACKEND_URL is correctly set\n• CORS is properly configured";
+          "❌ **MCP Server Not Available**\n\nThe MCP AI server is not running or not accessible. Please check:\n• MCP server is running on port 8080\n• REACT_APP_MCP_URL is correctly set\n• CORS is properly configured";
       } else if (error.response?.status === 500) {
-        errorContent = `❌ **Server Error**\n\nBackend error: ${error.response?.data?.message || error.message}`;
+        errorContent = `❌ **Server Error**\n\nMCP server error: ${error.response?.data?.message || error.message}`;
       } else if (
         error.code === "NETWORK_ERROR" ||
         error.code === "ERR_NETWORK"
       ) {
         errorContent =
-          "❌ **Network Error**\n\nCannot connect to backend server. Please check:\n• Backend server is running\n• Network connectivity\n• Firewall settings";
+          "❌ **Network Error**\n\nCannot connect to MCP server. Please check:\n• MCP server is running on localhost:8080\n• Network connectivity\n• Firewall settings";
       } else {
         errorContent = `❌ **Connection Error**\n\n${error.response?.data?.message || error.message}`;
       }
@@ -1430,7 +1436,14 @@ const GPTLikeChat = ({ user, onLogout }) => {
 
   // Main render
   return (
-    <Box h="100vh" bg="gray.50" display="flex" flexDirection="column" position="relative" fontFamily="system-ui, -apple-system, sans-serif">
+    <Box
+      h="100vh"
+      bg="gray.50"
+      display="flex"
+      flexDirection="column"
+      position="relative"
+      fontFamily="system-ui, -apple-system, sans-serif"
+    >
       {/* Main Content Area */}
       <Flex flex="1" overflow="hidden">
         {/* Chat Area */}
@@ -1487,14 +1500,25 @@ const GPTLikeChat = ({ user, onLogout }) => {
                     GSP Finance AI
                   </Text>
 
-                  <Text fontSize="lg" color="gray.600" maxW="4xl" lineHeight="1.6" fontFamily="system-ui, -apple-system, sans-serif">
-                    Your intelligent assistant for school management, financial analysis,
-                    and data insights. Ask natural questions and get instant, accurate
-                    answers with professional visualizations.
+                  <Text
+                    fontSize="lg"
+                    color="gray.600"
+                    maxW="4xl"
+                    lineHeight="1.6"
+                    fontFamily="system-ui, -apple-system, sans-serif"
+                  >
+                    Your intelligent assistant for school management, financial
+                    analysis, and data insights. Ask natural questions and get
+                    instant, accurate answers with professional visualizations.
                   </Text>
 
                   {/* Powered by section moved here */}
-                  <HStack spacing={6} fontSize="md" color="gray.500" fontWeight="500">
+                  <HStack
+                    spacing={6}
+                    fontSize="md"
+                    color="gray.500"
+                    fontWeight="500"
+                  >
                     <HStack spacing={2}>
                       <Box fontSize="16px">🗄️</Box>
                       <Text>MongoDB</Text>
@@ -1527,7 +1551,7 @@ const GPTLikeChat = ({ user, onLogout }) => {
                     cursor="default"
                     _hover={{
                       shadow: "md",
-                      borderColor: "gray.300"
+                      borderColor: "gray.300",
                     }}
                     transition="all 0.2s ease"
                   >
@@ -1547,12 +1571,22 @@ const GPTLikeChat = ({ user, onLogout }) => {
                       >
                         <FaChartBar color="#4a5568" />
                       </Box>
-                      <Text fontWeight="600" fontSize="lg" color="gray.800" fontFamily="system-ui, -apple-system, sans-serif">
+                      <Text
+                        fontWeight="600"
+                        fontSize="lg"
+                        color="gray.800"
+                        fontFamily="system-ui, -apple-system, sans-serif"
+                      >
                         Smart Analytics
                       </Text>
-                      <Text fontSize="sm" color="gray.600" lineHeight="1.6" fontFamily="system-ui, -apple-system, sans-serif">
-                        AI-powered data analysis with interactive visualizations and
-                        export capabilities
+                      <Text
+                        fontSize="sm"
+                        color="gray.600"
+                        lineHeight="1.6"
+                        fontFamily="system-ui, -apple-system, sans-serif"
+                      >
+                        AI-powered data analysis with interactive visualizations
+                        and export capabilities
                       </Text>
                     </VStack>
                   </Box>
@@ -1567,7 +1601,7 @@ const GPTLikeChat = ({ user, onLogout }) => {
                     cursor="default"
                     _hover={{
                       shadow: "md",
-                      borderColor: "gray.300"
+                      borderColor: "gray.300",
                     }}
                     transition="all 0.2s ease"
                   >
@@ -1587,11 +1621,22 @@ const GPTLikeChat = ({ user, onLogout }) => {
                       >
                         <FaDatabase color="#4a5568" />
                       </Box>
-                      <Text fontWeight="600" fontSize="lg" color="gray.800" fontFamily="system-ui, -apple-system, sans-serif">
+                      <Text
+                        fontWeight="600"
+                        fontSize="lg"
+                        color="gray.800"
+                        fontFamily="system-ui, -apple-system, sans-serif"
+                      >
                         Live Data
                       </Text>
-                      <Text fontSize="sm" color="gray.600" lineHeight="1.6" fontFamily="system-ui, -apple-system, sans-serif">
-                        Real-time access to student records, payments, and financial data
+                      <Text
+                        fontSize="sm"
+                        color="gray.600"
+                        lineHeight="1.6"
+                        fontFamily="system-ui, -apple-system, sans-serif"
+                      >
+                        Real-time access to student records, payments, and
+                        financial data
                       </Text>
                     </VStack>
                   </Box>
@@ -1606,7 +1651,7 @@ const GPTLikeChat = ({ user, onLogout }) => {
                     cursor="default"
                     _hover={{
                       shadow: "md",
-                      borderColor: "gray.300"
+                      borderColor: "gray.300",
                     }}
                     transition="all 0.2s ease"
                   >
@@ -1626,11 +1671,22 @@ const GPTLikeChat = ({ user, onLogout }) => {
                       >
                         <FaBrain color="#4a5568" />
                       </Box>
-                      <Text fontWeight="600" fontSize="lg" color="gray.800" fontFamily="system-ui, -apple-system, sans-serif">
+                      <Text
+                        fontWeight="600"
+                        fontSize="lg"
+                        color="gray.800"
+                        fontFamily="system-ui, -apple-system, sans-serif"
+                      >
                         Vector Intelligence
                       </Text>
-                      <Text fontSize="sm" color="gray.600" lineHeight="1.6" fontFamily="system-ui, -apple-system, sans-serif">
-                        Advanced semantic understanding for natural language queries
+                      <Text
+                        fontSize="sm"
+                        color="gray.600"
+                        lineHeight="1.6"
+                        fontFamily="system-ui, -apple-system, sans-serif"
+                      >
+                        Advanced semantic understanding for natural language
+                        queries
                       </Text>
                     </VStack>
                   </Box>
